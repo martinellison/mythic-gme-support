@@ -1,5 +1,5 @@
 {
-    "name": "mythic-support",
+    "name": "mythic-gme-support",
     "version": "0.1.7",
     "description": "Plugin to support Mythic Game Master Emulator",
     "main": "main.js",
