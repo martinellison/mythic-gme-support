@@ -17,7 +17,7 @@ import { SceneModal } from './scene/sceneModal.js';
 import { Adventure, AdventureModal } from './adventure.js';
 import { MythicObject, MythicObjectModal } from './object.js';
 import { Question, QuestionModal } from './question.js';
-import { MythicObjectMeta, Tables } from './tables/tables.js';
+import { MythicObjectMeta, Oracle, Tables } from './tables/tables.js';
 import { Metadata } from './metadata.js';
 import { Dice, DiceModal } from './dice.js';
 import { Meaning, MeaningModal } from './meaning.js';
@@ -355,7 +355,7 @@ export class CreateModal extends Modal {
 			tables.simples.forEach((kind: MythicObjectMeta, ident: string) => {
 				dropDown.addOption(ident, kind.displayName);
 			});
-			tables.oracles.forEach((oracle, ident: string) => {
+			tables.oracles.forEach((oracle: Oracle, ident: string) => {
 				if (!oracle.meta.noAlt)
 					dropDown.addOption(ident, `${oracle.meta.displayName} oracle`);
 			});
