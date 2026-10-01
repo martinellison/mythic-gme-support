@@ -12,15 +12,17 @@ import {
 import { DEFAULT_SETTINGS, MythicSettingTab, MythicSupportPluginSettings } from './settings.js';
 import { CodeBlock } from './codeblock.js';
 import 'reflect-metadata';
-import { Scene, SceneModal } from './scene.js';
+import { Scene, } from './scene/scene.js';
+import { SceneModal } from './scene/sceneModal.js';
 import { Adventure, AdventureModal } from './adventure.js';
 import { MythicObject, MythicObjectModal } from './object.js';
 import { Question, QuestionModal } from './question.js';
-import { MythicObjectMeta, Tables } from './tables2.js';
+import { MythicObjectMeta, Tables } from './tables/tables.js';
 import { Metadata } from './metadata.js';
-import { KdlTables } from './tables2.js';
 import { Dice, DiceModal } from './dice.js';
 import { Meaning, MeaningModal } from './meaning.js';
+import { SceneTypeSupport } from './scene/sceneType.js';
+import { KdlTables } from './tables/kdl.js';
 /** this checks whether a value exists and throws an error otherwise. */
 export function assertDefined<T>(value: T | undefined | null, narr?: string): asserts value is T {
 	if (value === undefined || value == null) {
@@ -31,8 +33,8 @@ export function assertDefined<T>(value: T | undefined | null, narr?: string): as
 }
 /** displays a trace message if required */
 export function mTrace(narr: string, ...vals: any[]): void {
-	// // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- only use here
-	// console.log("mythic", `${narr}: `, ...vals);
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- only use here
+	console.log("mythic", `${narr}: `, ...vals);
 }
 /** shorten a string. */
 export function shorten(s: string): string {
@@ -196,7 +198,7 @@ export default class MythicSupportPlugin extends Plugin {
 								case Scene.TAG:
 									{
 										let scene = Scene.fromJson(source);
-										scene.useSceneType();
+										SceneTypeSupport.useSceneType(scene);
 										new SceneModal(false, this.app, scene, block, this.tables, this).open();
 									}
 									break;

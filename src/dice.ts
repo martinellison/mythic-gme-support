@@ -67,6 +67,10 @@ export class Dice {
 	}
 	throw(): [number, string] {
 		const d = new DiceRandom(this.text);
+		if (d.items.length == 0) {
+			console.warn("(dice) badly formatted dice expression", this.text);
+			return [0, `badly formatted dice expression '${this.text}'`];
+		}
 		return d.throw();
 	}
 }
@@ -171,7 +175,6 @@ export class DiceModal extends Modal {
 				.setCta()
 				.onClick(async (): Promise<void> => {
 					this.close();
-					let _match = Dice.match(this.dice.text);
 					mTrace('dice', "saving dice", dice.text);
 					const [result, explain] = dice.throw();
 					dice.result = result;

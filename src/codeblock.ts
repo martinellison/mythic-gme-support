@@ -1,5 +1,5 @@
 import { Editor } from 'obsidian';
-/** MarkDown code block */
+/** This implements a MarkDown code block. This is how the data is stored. */
 export class CodeBlock {
 	start: number = 0;
 	end: number = 0;

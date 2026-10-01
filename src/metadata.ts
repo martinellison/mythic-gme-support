@@ -48,15 +48,15 @@ export class BlockTable {
 			if (!this.table.has(file.path)) this.table.set(file.path, new Array<Block>);
 			let fb = this.table.get(file.path);
 			if (fb !== undefined)
-				fb.push(new Block(rest, out_block));
+				void fb.push(new Block(rest, out_block));
 		}
 	}
 	/** if the file ha been renamed, transfer the block. */
 	renameFile(file: TFile, oldName: string): void {
 		let oldBlock = this.table.get(oldName);
 		if (oldBlock !== undefined) {
-			this.table.set(file.path, oldBlock);
-			const _ok = this.table.delete(oldName);
+			void this.table.set(file.path, oldBlock);
+			void this.table.delete(oldName);
 		}
 	}
 	deleteFile(file: TFile) {

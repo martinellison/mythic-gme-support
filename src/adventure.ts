@@ -3,7 +3,7 @@ import { Modal, App, Setting, MarkdownPostProcessorContext, } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
 import MythicSupportPlugin, { assertDefined, mTrace, shorten } from './main.js';
 import { Metadata } from './metadata.js';
-import { Tables } from './tables2.js';
+import { Tables } from './tables/tables.js';
 
 /** implements an Adventure block. Adventure text should come after a adventure block */
 export class Adventure {
@@ -77,7 +77,7 @@ export class AdventureModal extends Modal {
 				});
 			});
 
-		new Setting(this.contentEl).setName("ShowLists")
+		new Setting(this.contentEl).setName("Show lists")
 			.setDesc("show the generated lists")
 			.addToggle((toggle) => {
 				toggle.setValue(this.adventure.showLists);

@@ -1,12 +1,10 @@
-// import { DiceRandom } from "./dice.js";
-import { assertDefined, mTrace, shorten } from "./main.js";
+import { assertDefined, mTrace } from "./main.js";
 import { Metadata } from "./metadata.js";
-// import { Question } from "./question.js";
 import { Expose } from 'class-transformer';
-import { CheckTableEntry, Interpretation, Tables } from "./tables2.js";
-import { MarkdownPostProcessorContext } from "obsidian";
+import { Tables } from "./tables/tables.js";
+import { CheckTableEntry, Interpretation } from "./tables/checkTable.js";
 
-/** the focus of a random event */
+/** the focus of a random event.  MGME book p36ff. */
 export class EventFocus {
 	@Expose() event_focus_index: number = 0;
 	@Expose() object: string = "";
@@ -16,18 +14,18 @@ export class EventFocus {
 	throwDice(tables: Tables) {
 		assertDefined(tables);
 		mTrace('eventfocus', "throwing dice for focus");
-		this.event_focus_index = tables.eventFocus.throwDiceStandardised(false /* TODO */);
+		this.event_focus_index = tables.eventFocus.throwDiceStandardised();
 		this.objectNumber = Math.floor(Math.random() * 100.0) / 100.0;
 	}
 	/** this returns the description of the random event focus. */
 	focusDescr(tables: Tables): CheckTableEntry {
-		const entry = tables.eventFocus.resolve(this.event_focus_index, false /* TODO */);
+		const entry = tables.eventFocus.resolve(this.event_focus_index,);
 		mTrace('eventfocus', "focus resolved to", entry);
 		return entry;
 	}
 	/** set the object (or no object, for some interpretations). Having no object is the normal situation for some interpretations, such as 'none'. */
-	defineSelectedObject(metadata: Metadata, interpretation: string) {
-		const objects = metadata.blockTable.objects(interpretation, true);
+	defineSelectedObject(metadata: Metadata, interpretation: string, includeProtected: boolean) {
+		const objects = metadata.blockTable.objects(interpretation, includeProtected);
 		if (objects.length == 0) {
 			mTrace('event', "no objects to select from, for", interpretation);
 			this.objectNumber = 0;

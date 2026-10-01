@@ -1,7 +1,7 @@
 import { Type, plainToInstance, instanceToPlain, Expose } from 'class-transformer';
 import { Modal, App, Setting, MarkdownPostProcessorContext, DropdownComponent, DisplayValueComponent, } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
-import { Tables } from './tables2.js';
+import { Tables } from './tables/tables.js';
 import { EventFocus, } from './eventfocus.js';
 import MythicSupportPlugin, { mTrace, shorten } from './main.js';
 import { Metadata } from './metadata.js';
@@ -22,7 +22,7 @@ export class QuestionOdds {
 		this.fate_check_modifier = mod;
 	}
 }
-/** implements an fate question block. Question text should come after a question block. */
+/** implements an fate question block. MGME book pp17-31. Question text should come after a question block. */
 export class Question implements ChaosProvider {
 	chaosValue(): number {
 		mTrace('question', "chaos factor is:", this.chaosFactor);
@@ -38,6 +38,7 @@ export class Question implements ChaosProvider {
 	@Expose() focus?: EventFocus;
 	@Type(() => Meaning)
 	@Expose() meaning?: Meaning;
+	@Expose() includeProtected?: boolean;
 	constructor(description: string) {
 		this.fateData = new FateData(this);
 		this.focus = undefined;
@@ -58,7 +59,7 @@ export class Question implements ChaosProvider {
 				this.focus = new EventFocus();
 				this.focus.throwDice(tables);
 				let ent = this.focus.focusDescr(tables);
-				this.focus.defineSelectedObject(metadata, ent.interpretation);
+				this.focus.defineSelectedObject(metadata, ent.interpretation, this.includeProtected ?? false);
 			}
 		} else {
 			this.focus = undefined;
@@ -71,10 +72,9 @@ export class Question implements ChaosProvider {
 			// @ts-ignore
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- JSON.parse returns any
 			let question: Question = plainToInstance(Question, JSON.parse(source), { excludeExtraneousValues: true });
-			if (question.fateData === undefined)
-				question.fateData = new FateData(question);
+			if (question.fateData === undefined) question.fateData = new FateData(question);
 			question.fateData.chaosProvider = question;
-
+			if (question.includeProtected == undefined) question.includeProtected = false;
 			return question;
 		} catch (error) {
 			console.error("error parsing object: ", error, "reading:", shorten(source));
@@ -83,6 +83,7 @@ export class Question implements ChaosProvider {
 	}
 	/** convert to a JSON string */
 	toJson(): string {
+		if (this.includeProtected == false) this.includeProtected = undefined;
 		return JSON.stringify(instanceToPlain(this));
 	}
 	/** describe the scene in plain text */
@@ -99,6 +100,7 @@ export class Question implements ChaosProvider {
 					texts.push(this.meaning.result2);
 				}
 			}
+			if (this.includeProtected) texts.push(", include protected");
 		} catch (error) {
 			const msg = `error in question: ${error as Error}`;
 			console.error(msg);
@@ -125,6 +127,7 @@ export class Question implements ChaosProvider {
 					divElt.createEl('b', { text: question.meaning.result2, cls: 'mythic-random' });
 				}
 			}
+			if (question.includeProtected) divElt.createSpan({ text: " include protected" });
 		} catch (error) {
 			const msg = `error when parsing question: ${error as Error}`;
 			console.error(msg);
@@ -155,10 +158,16 @@ export class QuestionModal extends Modal {
 					this.question.chaosFactor = value;
 				});
 			});
+		new Setting(this.contentEl).setName('Include protected')
+			.setDesc("include protected objects in any random selection")
+			.addToggle((toggle) => {
+				toggle.setValue(this.question.includeProtected ?? false)
+					.onChange((value) => { this.question.includeProtected = value; });
+			});
 		let fateDataModal = new FateDataModal(this.contentEl, tables, (isRandom) => {
 			this.question.makeRandomEvent(isRandom, tables, metadata);
 			this.setRandom(isRandom, tables);
-			/* TODO iff is random, create a random event i.e. focus and question*/
+			/* TODO iff is random, create a random event i.e. focus and question */
 		});
 		fateDataModal.setVisibility(true, "Q");
 		fateDataModal.setData(question.fateData, tables);

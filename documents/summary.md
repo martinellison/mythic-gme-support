@@ -4,6 +4,8 @@ This page provides an introduction to internals of the Mystic GME plugin.
 
 The plugin is for Obsidian so see the Obsidian plugin document.
 
+The "MGME book" is Pigeon, Tana, *Mythic Game Master Emulator Second Edition*. 2025, Word Mill Games, Riverside.
+
 ## Data blocks
 
 The data is stored in Markdown "code blocks" with `mythic-` language codes. Obsidian has support for collecting these blocks as 'metadata' so they can be scanned by plugins. 
@@ -20,16 +22,16 @@ The plugin processes these blocks:
 
 The block types are:
 
-| Block type  | Use                             | Comments                                           |
-| ----------- | ------------------------------- | -------------------------------------------------- |
-| Adventure   | top level                       |                                                    |
-| Dice        | dice thrower, e.g. for `2d6+d4` | can be used with other rule sets                   |
-| Event focus | event focus                     | not a stand-alone block/Modal                      |
-| Fate data   | fate questions                  |                                                    |
-| Meaning     | meaning                         | may be stand-alone, or part of a question or scene |
-| Object      | anything that can go on a list  | also used for oracle responses and simple text     |
-| Question    | fate question                   | can contain event focus, fate data or meaning      |
-| Scene       | scene in the story              | can contain event focus, fate data or meaning      |
+| Block type  | Use                             | In book   | Comments                                           |
+| ----------- | ------------------------------- | --------- | -------------------------------------------------- |
+| Adventure   | top level                       | *no*      |                                                    |
+| Dice        | dice thrower, e.g. for `2d6+d4` | *no*      | can be used with other rule sets                   |
+| Event focus | event focus                     | pp 36ff   | not a stand-alone block/Modal                      |
+| Fate data   | fate questions                  | pp 17-33  |                                                    |
+| Meaning     | meaning                         | pp 46ff   | may be stand-alone, or part of a question or scene |
+| Object      | anything that can go on a list  | pp 44ff   | also used for oracle responses and simple text     |
+| Question    | fate question                   | pp 17-33  | can contain event focus, fate data or meaning      |
+| Scene       | scene in the story              | pp 59-120 | can contain event focus, fate data or meaning      |
 
 ### An example of a block
 

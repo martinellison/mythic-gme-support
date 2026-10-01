@@ -6,13 +6,23 @@ export interface MythicSupportPluginSettings {
 	autoScanLists: boolean;
 	tableFiles: Array<string>,
 }
-
+export const DEFAULT_TABLES_FILE = 'tables.kdl';
 export const DEFAULT_SETTINGS: MythicSupportPluginSettings = {
 	adventureFolder: "",
 	autoScanLists: true,
-	tableFiles: ['tables.md', 'tables-extra.md'],
+	tableFiles: [DEFAULT_TABLES_FILE],
 };
+export class SettingsHelper {
+	/** return the first table file name, and, if necessary, update settings to ensure that there is one. */
+	static ensureTablesFile(settings: MythicSupportPluginSettings): string {
+		if (settings.tableFiles.length == 0) {
+			settings.tableFiles.push();
+		}
+		return settings.tableFiles[0] ?? DEFAULT_TABLES_FILE;
+	}
+}
 
+/** this implements the plugin settings modal. It doesn't implement any specific part of the MGME book. */
 export class MythicSettingTab extends PluginSettingTab {
 	plugin: MythicSupportPlugin;
 	app: App;
@@ -55,6 +65,8 @@ export class MythicSettingTab extends PluginSettingTab {
 				})),
 				onDelete: (idx) => {
 					this.plugin.settings.tableFiles.splice(idx, 1);
+					if (this.plugin.settings.tableFiles.length == 0)
+						void SettingsHelper.ensureTablesFile(this.plugin.settings);
 					this.update();
 					void this.plugin.saveData(this.plugin.settings);
 					mTrace('setting', "removed table file");
