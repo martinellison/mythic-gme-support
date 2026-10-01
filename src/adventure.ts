@@ -3,7 +3,7 @@ import { Modal, App, Setting, MarkdownPostProcessorContext, } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
 import MythicSupportPlugin, { assertDefined, mTrace, shorten } from './main.js';
 import { Metadata } from './metadata.js';
-import { Tables } from './tables/tables.js';
+import { MythicObjectMeta, Tables } from './tables/tables.js';
 
 /** implements an Adventure block. Adventure text should come after a adventure block */
 export class Adventure {
@@ -42,7 +42,7 @@ export class Adventure {
 			divElt.createSpan({ text: "(adventure) " });
 			divElt.createEl('i', { text: adventure.description.trim(), });
 			if (adventure.showLists && tables.objectKinds !== undefined) { // LATER recode to pull all objects using one call
-				tables.objectKinds.forEach((kind, ident) => {
+				tables.objectKinds.forEach((kind: MythicObjectMeta, ident: string) => {
 					let kindElt = divElt.createDiv();
 					kindElt.createEl('b', { text: `${kind.displayName}: ` });
 					// const objects = metadata.blockTable.objects(ident).map(ch => (ch.marker !== undefined && ch.marker.trim() != "" ? ` [${ch.marker}] ` : "") + ch.name);
