@@ -25,7 +25,7 @@ export class QuestionOdds {
 /** implements an fate question block. MGME book pp17-31. Question text should come after a question block. */
 export class Question implements ChaosProvider {
 	chaosValue(): number {
-		mTrace('question', "chaos factor is:", this.chaosFactor);
+		mTrace('question', `chaos factor is: ${this.chaosFactor}`);
 		return this.chaosFactor;
 	}
 	static readonly TAG = "mythic-question";

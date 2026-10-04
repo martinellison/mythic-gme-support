@@ -1,4 +1,4 @@
-import { App, debounce, Modal, PluginSettingTab, Setting, SettingDefinitionItem } from 'obsidian';
+import { App, debounce, Modal, PluginSettingTab, Setting } from 'obsidian';
 import MythicSupportPlugin, { mTrace } from './main.js';
 
 export interface MythicSupportPluginSettings {

@@ -1,5 +1,5 @@
 import { parse, format, ParseResult, Value } from 'kdljs';
-import { TFile, Vault } from "obsidian";
+import { Vault } from "obsidian";
 import { Type, plainToInstance, Expose } from 'class-transformer';
 import { QuestionOdds } from '../question.js';
 import { assertDefined, mTrace } from '../main.js';
@@ -39,7 +39,7 @@ export class KdlTables {
 				return;
 			}
 			let nodes: Array<KdlNode> = plainToInstance(Array<KdlNode>, kdl.output);
-			mTrace('', "tables as read from KDL", nodes);
+			// mTrace('', "tables as read from KDL", nodes);
 			nodes.forEach((node: KdlNode) => {
 				// mTrace('kdl', "node is", node);
 				switch (node.name) {
@@ -103,7 +103,7 @@ export class KdlTables {
 		const props = new Map(Object.entries(node.properties));
 		// const version: string = node.values[0]?.toString() ?? "??1";
 		const version = props.get('version') as string;
-		mTrace('tables', "version node:", node, "version", version);
+		mTrace('tables', `version node: ${node.name}, version ${version}`);
 		if (table.tableVersions.has(ident)) {
 			const foundVersion = table.tableVersions.get(ident) ?? "??2";
 			console.warn(`already have table ${ident} version '${foundVersion}' but found '${version}'`);

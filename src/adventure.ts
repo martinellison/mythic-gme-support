@@ -47,7 +47,7 @@ export class Adventure {
 					kindElt.createEl('b', { text: `${kind.displayName}: ` });
 					// const objects = metadata.blockTable.objects(ident).map(ch => (ch.marker !== undefined && ch.marker.trim() != "" ? ` [${ch.marker}] ` : "") + ch.name);
 					const objects = metadata.blockTable.objectNames(ident, true);
-					mTrace('adventure', "for adventure", ident, kind, objects);
+					// mTrace('adventure', "for adventure", ident, kind, objects);
 					kindElt.createSpan({ text: ` ${objects.join(", ")}` });
 					mTrace('adventure', (`${ident}: found ${objects.length}`));
 				});

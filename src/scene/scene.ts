@@ -37,38 +37,6 @@ export class Scene implements ChaosProvider {
 	constructor(num?: string) {
 		this.ident = num ?? "0";
 	}
-	/** checks whether the scene has a valid value and can be saved. */
-	check(): SceneStatus {
-		if (this.expected.trim() == "") return SceneStatus.NeedsExpected;
-		switch (this.sceneType) {
-			case SceneType.Initial:
-				return SceneStatus.NeedsRandom;
-			case SceneType.Altered:
-				switch (this.kind) {
-					case AlterationKind.Expected:
-						return SceneStatus.NeedsAlterationKind;
-					case AlterationKind.FateQuestion:
-						if (this.fate !== undefined && this.fate.description.trim() == "")
-							return SceneStatus.NeedsFate;
-						break;
-					case AlterationKind.Meaning:
-						if (this.meaning === undefined)
-							return SceneStatus.NeedsMeaning;
-						break;
-					default:
-				}
-				break;
-			case SceneType.Interrupt:
-				if (this.kind == AlterationKind.Meaning && this.meaning == undefined)
-					return SceneStatus.NeedsMeaning;
-				break;
-			case SceneType.Expected:
-				break;
-		}
-		if (this.sceneType != SceneType.Expected && (this.alteration === undefined || this.alteration.trim() == ""))
-			return SceneStatus.NeedsAlteration;
-		return SceneStatus.OK;
-	}
 	/** generate randomness. The table for the scene type test is hard coded. */
 	setRandom(tables: Tables, plugin: MythicSupportPlugin): void {
 		// mTrace('scene', "Setting random");
@@ -118,10 +86,12 @@ export class Scene implements ChaosProvider {
 				break;
 		}
 		if (this.fate !== undefined) {
+			mTrace('scene', "creating fate");
 			this.fate.throwDice();
 			// mTrace('scene', "fate on", this.fate);
 		}
 		if (this.focus !== undefined) {
+			mTrace('scene', "creating focus");
 			this.focus.throwDice(tables);
 			let ent = this.focus.focusDescr(tables);
 			// mTrace('scene', "focus on", ent.text);
@@ -129,10 +99,43 @@ export class Scene implements ChaosProvider {
 		}
 		if (this.meaning !== undefined) { // TODO the permitted kinds of adjustment are different for interrupts
 			const tabSiz = this.meaning.tableSizes(tables);
+			mTrace('scene', "creating meaning", `(table count ${tabSiz.length})`);
 			this.meaning.throwDice(tabSiz);
 			this.meaning.explain(tables);
 		}
 		// mTrace('scene set random', this.fate === undefined ? "haven't fate" : "have fate");
+	}
+	/** checks whether the scene has a valid value and can be saved. */
+	check(): SceneStatus {
+		if (this.expected.trim() == "") return SceneStatus.NeedsExpected;
+		switch (this.sceneType) {
+			case SceneType.Initial:
+				return SceneStatus.NeedsRandom;
+			case SceneType.Altered:
+				switch (this.kind) {
+					case AlterationKind.Expected:
+						return SceneStatus.NeedsAlterationKind;
+					case AlterationKind.FateQuestion:
+						if (this.fate !== undefined && this.fate.description.trim() == "")
+							return SceneStatus.NeedsFate;
+						break;
+					case AlterationKind.Meaning:
+						if (this.meaning === undefined)
+							return SceneStatus.NeedsMeaning;
+						break;
+					default:
+				}
+				break;
+			case SceneType.Interrupt:
+				if (this.kind == AlterationKind.Meaning && this.meaning == undefined)
+					return SceneStatus.NeedsMeaning;
+				break;
+			case SceneType.Expected:
+				break;
+		}
+		if (this.sceneType != SceneType.Expected && (this.alteration === undefined || this.alteration.trim() == ""))
+			return SceneStatus.NeedsAlteration;
+		return SceneStatus.OK;
 	}
 
 	/** convert from a JSON string */
@@ -201,7 +204,7 @@ export class Scene implements ChaosProvider {
 		}
 		if (this.meaning !== undefined) {
 			if (this.meaning.result1.trim() == "")
-				console.warn("unexplained meaning", this.meaning);
+				console.warn("unexplained meaning", this.meaning, ` (type ${this.sceneType}, kind ${this.kind})`); // TODO FIX has occurred random [0,0] description '' in 0.1.9 2026-10-04
 			else desc3 = `${this.meaning.result1}: ${this.meaning.result2}`;
 		}
 		// mTrace('scene', desc1, descrs.join(' '));

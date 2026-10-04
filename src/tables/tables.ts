@@ -2,8 +2,6 @@
 import { Type, plainToInstance, Expose } from 'class-transformer';
 import { QuestionOdds } from '../question.js';
 import { CheckTable } from './checkTable.js';
-import { TFile, Vault } from 'obsidian';
-import { DefaultTablesData } from './kdl-gen.js';
 /** which kind of object */
 export enum ThingFamily { ThingObject, OracleResponse, SimpleText };
 /** describes some objects, including how to randomise them. Loaded in from the KDL tables. */

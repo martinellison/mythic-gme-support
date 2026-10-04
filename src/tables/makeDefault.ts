@@ -1,4 +1,4 @@
-import { format, Document, Node, Value } from 'kdljs';
+import { Document, Node } from 'kdljs';
 export class TablesMakeDefault {
 }
 export class DDItem {
@@ -31,7 +31,7 @@ export class DDItem {
 			properties: Object.fromEntries(this.properties),
 			children: this.children.map(
 				(child) => { return child.asNode(); }),
-			tags: { name: undefined, values: [], properties: {} }
+			tags: { name: '', values: [], properties: {} }
 		};
 	}
 }

@@ -76,7 +76,7 @@ export class BlockTable {
 				}
 			}
 		}
-		mTrace('', kind, "objects are", objects);
+		// mTrace('', kind, "objects are", objects);
 		return objects;
 	}
 	/** names of all objects of a kind */
@@ -141,13 +141,13 @@ export class Metadata {
 		plugin.registerEvent(cache.on('changed', (file, data, cache) => this.onChanged(file, data, cache, plugin, 'load'), this));
 		plugin.registerEvent(cache.on('deleted', (file: TAbstractFile) => {
 			if (file instanceof TFile) {
-				mTrace('', "metadata file deleted", file);
+				mTrace('', "metadata file deleted", file.path);
 				this.blockTable.deleteFile(file);
 			}
 		}, this));
 		plugin.registerEvent(vault.on('rename', (file: TAbstractFile, oldPath: string) => {
 			if (file instanceof TFile) {
-				mTrace('', "metadata file renamed", file, "from", oldPath);
+				mTrace('', "metadata file renamed", file.path, "from", oldPath);
 				this.blockTable.renameFile(file, oldPath);
 			}
 		}, this));
@@ -178,7 +178,7 @@ export class Metadata {
 				}
 			}
 		}
-		mTrace('', "block files scanned", this.blockTable);
+		mTrace('', "block files scanned"); //), this.blockTable);
 	}
 }
 ;

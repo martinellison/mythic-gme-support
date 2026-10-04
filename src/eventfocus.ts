@@ -20,7 +20,7 @@ export class EventFocus {
 	/** this returns the description of the random event focus. */
 	focusDescr(tables: Tables): CheckTableEntry {
 		const entry = tables.eventFocus.resolve(this.event_focus_index,);
-		mTrace('eventfocus', "focus resolved to", entry);
+		mTrace('eventfocus', "focus resolved to", entry.text);
 		return entry;
 	}
 	/** set the object (or no object, for some interpretations). Having no object is the normal situation for some interpretations, such as 'none'. */

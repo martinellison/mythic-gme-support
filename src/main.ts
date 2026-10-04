@@ -32,7 +32,7 @@ export function assertDefined<T>(value: T | undefined | null, narr?: string): as
 	}
 }
 /** displays a trace message if required */
-export function mTrace(narr: string, ...vals: any[]): void {
+export function mTrace(narr: string, ...vals: string[]): void {
 	// // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- only use here
 	// console.log("mythic", `${narr}: `, ...vals);
 }
@@ -75,7 +75,7 @@ export default class MythicSupportPlugin extends Plugin {
 				mTrace('main', "layout ready");
 				this.tables = await KdlTables.load(this.app.vault, this.settings);
 				await this.onCreate();
-				mTrace("plugin", "tables loaded", this.tables);
+				mTrace("plugin", "tables loaded"); //, this.tables);
 				if (this.tables.result.trim() != "") {
 					console.error("could not load KDL:", this.tables.result);
 					await MythicSupportPlugin.displayMessage(this.app, `${this.tables.result}`);
@@ -314,7 +314,7 @@ export default class MythicSupportPlugin extends Plugin {
 				DEFAULT_SETTINGS,
 				(await this.loadData()) as Partial<MythicSupportPluginSettings>,
 			);
-			mTrace('main', "settings loaded:", this.settings);
+			// mTrace('main', "settings loaded:", this.settings);
 		} catch (error) {
 			const msg = `error loading settings: ${error as Error}`;
 			console.error(msg);
