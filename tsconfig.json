@@ -18,6 +18,7 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "types": ["@obsidian-typings/obsidian-public-latest"],
+        "noImplicitAny": true,
         // "allowImportingTsExtensions": true,
         "paths": {
             "@obsidian-typings/obsidian-public-latest/implementations": [

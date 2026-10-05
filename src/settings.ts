@@ -1,4 +1,5 @@
 import { App, debounce, Modal, PluginSettingTab, Setting } from 'obsidian';
+import type { SettingDefinitionItem__ } from 'obsidian';
 import MythicSupportPlugin, { mTrace } from './main.js';
 
 export interface MythicSupportPluginSettings {
@@ -36,7 +37,8 @@ export class MythicSettingTab extends PluginSettingTab {
 		plugin.registerEvent(this.app.vault.on('delete', refresh));
 		plugin.registerEvent(this.app.vault.on('rename', refresh));
 	}
-	getSettingDefinitions(): SettingDefinitionItem[] {
+	display() { console.error("display should not be called"); }
+	getSettingDefinitions(): SettingDefinitionItem__[] {
 		return [
 			{ name: "Auto scan lists", desc: "automatically recreate lists", control: { type: 'toggle', defaultValue: true, key: 'autoScanLists' } },
 			{ name: "Adventure folder", desc: "folder containing the current adventure", control: { type: 'folder', defaultValue: this.app.vault.getRoot().path, key: 'adventureFolder' } },
@@ -53,7 +55,7 @@ export class MythicSettingTab extends PluginSettingTab {
 					}
 				},
 				items: this.plugin.settings.tableFiles.map((s) => ({
-					name: s, action: (el, index) => {
+					name: s, action: (el: unknown, index: number) => {
 						mTrace('settings', "table file action");
 						let oldFileName = this.plugin.settings.tableFiles[index] ?? "??";
 						new TablesFolderModal(this.plugin.app, oldFileName, (newFileName: string) => {
@@ -63,7 +65,7 @@ export class MythicSettingTab extends PluginSettingTab {
 						}).open();
 					}
 				})),
-				onDelete: (idx) => {
+				onDelete: async (idx: number) => {
 					this.plugin.settings.tableFiles.splice(idx, 1);
 					if (this.plugin.settings.tableFiles.length == 0)
 						void SettingsHelper.ensureTablesFile(this.plugin.settings);
