@@ -1,6 +1,6 @@
 {
     "name": "mythic-gme-support",
-    "version": "0.1.20",
+    "version": "0.1.21",
     "description": "Plugin to support Mythic Game Master Emulator",
     "main": "main.js",
     "type": "module",
@@ -16,7 +16,7 @@
         "@eslint/js": "^9.39.4",
         "@obsidian-typings/obsidian-public-latest": "^6.29.0",
         "@types/node": "^22.20.4",
-        "esbuild": "0.25.5",
+        "esbuild": "0.25.9",
         "eslint": "^9.39.4",
         "eslint-plugin-obsidianmd": "^0.4.0",
         "globals": "^17.6.0",
@@ -34,5 +34,8 @@
         "kdljs": "^0.3.0",
         "reflect-metadata": "^0.2.2",
         "tsx": "^4.23.7"
+    },
+    "overrides": {
+        "esbuild": "0.25.9"
     }
 }
