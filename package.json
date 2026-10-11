@@ -1,6 +1,6 @@
 {
     "name": "mythic-gme-support",
-    "version": "0.1.27",
+    "version": "0.1.28",
     "description": "Plugin to support Mythic Game Master Emulator",
     "main": "main.js",
     "type": "module",
