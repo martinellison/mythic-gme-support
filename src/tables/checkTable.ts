@@ -1,4 +1,4 @@
-import { DiceRandom } from '../dice.js';
+import { DiceRandom } from '../dice-utils.js';
 
 /** Interpretation covers the interpretations of an EventFocus that do not have an entry in the `eventFocus` table. */
 export const enum Interpretation {
@@ -74,7 +74,7 @@ export class CheckTable {
 			return Math.floor(tw * Math.random());
 		} else {
 			const d = new DiceRandom(this.diceType);
-			const diceThrow = d.throw();
+			const diceThrow = d.throwA();
 			return diceThrow[0] - d.min() + 1;
 		}
 	}

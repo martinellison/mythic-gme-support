@@ -2,8 +2,9 @@ import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
 import { Modal, App, Setting, MarkdownPostProcessorContext } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
 import { MythicObjectMeta, Tables, ThingFamily } from './tables/tables.js';
-import MythicSupportPlugin, { assertDefined, mTrace, shorten } from './main.js';
+import { assertDefined, shorten } from './utils.js';
 import { Metadata } from './metadata.js';
+import MythicSupportPlugin from './main.js';
 
 /**  MythicObject implements an Object block. MGME book 44ff. Object text should come after a object block */
 export class MythicObject {

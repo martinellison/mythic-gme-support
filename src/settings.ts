@@ -1,6 +1,7 @@
 import { App, debounce, Modal, PluginSettingTab, Setting } from 'obsidian';
 import type { SettingDefinitionItem__ } from 'obsidian';
-import MythicSupportPlugin, { mTrace } from './main.js';
+import { mTrace } from './utils.js';
+import MythicSupportPlugin from './main.js';
 
 export interface MythicSupportPluginSettings {
 	adventureFolder: string;

@@ -1,9 +1,10 @@
 import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
 import { Modal, App, Setting, MarkdownPostProcessorContext, } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
-import MythicSupportPlugin, { assertDefined, mTrace, shorten } from './main.js';
+import { assertDefined, mTrace, shorten } from './utils.js';
 import { Metadata } from './metadata.js';
 import { MythicObjectMeta, Tables } from './tables/tables.js';
+import MythicSupportPlugin from './main.js';
 
 /** implements an Adventure block. Adventure text should come after a adventure block */
 export class Adventure {
@@ -47,7 +48,7 @@ export class Adventure {
 					kindElt.createEl('b', { text: `${kind.displayName}: ` });
 					// const objects = metadata.blockTable.objects(ident).map(ch => (ch.marker !== undefined && ch.marker.trim() != "" ? ` [${ch.marker}] ` : "") + ch.name);
 					const objects = metadata.blockTable.objectNames(ident, true);
-					// mTrace('adventure', "for adventure", ident, kind, objects);
+					mTrace('adventure', "for adventure", ident, JSON.stringify(kind), JSON.stringify(objects));
 					kindElt.createSpan({ text: ` ${objects.join(", ")}` });
 					mTrace('adventure', (`${ident}: found ${objects.length}`));
 				});

@@ -3,10 +3,11 @@ import { Modal, App, Setting, MarkdownPostProcessorContext, DropdownComponent, D
 import { CodeBlock } from './codeblock.js';
 import { Tables } from './tables/tables.js';
 import { EventFocus, } from './eventfocus.js';
-import MythicSupportPlugin, { mTrace, shorten } from './main.js';
+import { mTrace, shorten } from './utils.js';
 import { Metadata } from './metadata.js';
 import { Meaning, MeaningModal } from './meaning.js';
 import { ChaosProvider, FateData, FateDataModal } from './fatedata.js';
+import MythicSupportPlugin from './main.js';
 const NONIDENT = /[^a-zA-Z0-9]+/g;
 /** fate check modifier line in a table. */
 export class QuestionOdds {
@@ -202,7 +203,7 @@ export class QuestionModal extends Modal {
 				}));
 		this.setRandom(this.hasRandom, tables);
 	}
-	/** updates the Modal to refelct whether a random event has occurred. */
+	/** updates the Modal to reflect whether a random event has occurred. */
 	setRandom(hasRandom: boolean, tables: Tables) {
 		this.question.hasRandom = hasRandom;
 		this.hasRandom = hasRandom;

@@ -2,13 +2,14 @@ import { Type, plainToInstance, instanceToPlain, Expose } from 'class-transforme
 import { MarkdownPostProcessorContext, } from 'obsidian';
 import { Tables } from '../tables/tables.js';
 import { EventFocus, } from '../eventfocus.js';
-import MythicSupportPlugin, { assertDefined, mTrace, mythicDice, shorten } from '../main.js';
+import { assertDefined, mTrace, mythicDice, shorten } from '../utils.js';
 // import { Question, QuestionModal } from './question.js';
 import { FateData, ChaosProvider } from '../fatedata.js';
 import { Meaning, } from '../meaning.js';
 import { SceneType, SceneTypeSupport } from './sceneType.js';
 import { AlterationKind } from './alteration.js';
 import { AdjustmentSupport, SceneAdjustment } from './adjustment.js';
+import MythicSupportPlugin from '../main.js';
 
 /** checking status of a scene. Keep the order. */
 export enum SceneStatus {

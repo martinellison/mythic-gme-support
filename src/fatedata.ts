@@ -1,6 +1,6 @@
 import { Setting, TextAreaComponent, ButtonComponent, DisplayValueComponent, DropdownComponent } from 'obsidian';
 import { Tables } from './tables/tables.js';
-import { assertDefined, mTrace, mythicDice } from './main.js';
+import { assertDefined, mTrace, mythicDice } from './utils.js';
 import { Exclude, Expose } from 'class-transformer';
 /** can supply the chaos level. */
 export interface ChaosProvider {

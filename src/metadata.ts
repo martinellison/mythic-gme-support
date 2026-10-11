@@ -1,6 +1,7 @@
 import { CachedMetadata, MetadataCache, Pos, TAbstractFile, TFile, Vault, } from "obsidian";
-import MythicSupportPlugin, { assertDefined, mTrace } from "./main.js";
+import { assertDefined, mTrace } from "./utils.js";
 import { MythicObject } from "./object.js";
+import MythicSupportPlugin from "./main.js";
 /** a MarkDown code block */
 export class Block {
 	header: string = "";
@@ -178,7 +179,7 @@ export class Metadata {
 				}
 			}
 		}
-		mTrace('', "block files scanned"); //), this.blockTable);
+		mTrace('', "block files scanned", JSON.stringify(this.blockTable));
 	}
 }
 ;
