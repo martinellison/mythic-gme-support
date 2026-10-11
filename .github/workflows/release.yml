@@ -45,4 +45,4 @@ jobs:
                   tag="${GITHUB_REF#refs/tags/}"
 
                   gh release create "$tag" --title="$tag" --draft --prerelease \
-                    main.js manifest.json styles.css CONTRIBUTING.md LICENSE README.md tables.kdl How-to-write-your-own-adventure.md
+                    main.js manifest.json styles.css CONTRIBUTING.md LICENSE README.md  How-to-write-your-own-adventure.md
