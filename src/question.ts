@@ -52,15 +52,17 @@ export class Question implements ChaosProvider {
 		if (isRandom) {
 			if (this.meaning == undefined) {
 				this.meaning = new Meaning(this.meaningKind);
-				const tabSiz = this.meaning.tableSizes(tables);
-				this.meaning.throwDice(tabSiz);
-				this.meaning.explain(tables);
+				this.meaning.makeRandom(tables);
+				// const tabSiz = this.meaning.tableSizes(tables);
+				// this.meaning.throwDice(tabSiz);
+				// this.meaning.explain(tables);
 			}
 			if (this.focus == undefined) {
 				this.focus = new EventFocus();
-				this.focus.throwDice(tables);
-				let ent = this.focus.focusDescr(tables);
-				this.focus.defineSelectedObject(metadata, ent.interpretation, this.includeProtected ?? false);
+				// this.focus.throwDice(tables);
+				// let ent = this.focus.focusDescr(tables);
+				// this.focus.defineSelectedObject(metadata, ent.interpretation, this.includeProtected ?? false);
+				this.focus.makeRandom(tables, metadata, this.includeProtected ?? false);
 			}
 		} else {
 			this.focus = undefined;
@@ -172,8 +174,7 @@ export class QuestionModal extends Modal {
 		});
 		fateDataModal.setVisibility(true, "Q");
 		fateDataModal.setData(question.fateData, tables);
-		let dc: DropdownComponent | undefined;
-		MeaningModal.makeMeaning(this.contentEl, dc, tables,
+		this.meaningSetting = MeaningModal.makeMeaning(this.contentEl, tables,
 			(value) => {
 				if (this.question.meaning !== undefined)
 					this.question.meaning.meaningKind = value;
@@ -208,6 +209,7 @@ export class QuestionModal extends Modal {
 		this.question.hasRandom = hasRandom;
 		this.hasRandom = hasRandom;
 		this.meaningSetting?.setVisibility(hasRandom);
+		// if (this.dropdownComponent !== undefined)
 		if (this.infoDisplay1 !== undefined)
 			this.infoDisplay1.setValue(this.question.toText(tables));
 	}

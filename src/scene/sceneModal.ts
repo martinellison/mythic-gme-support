@@ -22,7 +22,8 @@ export class SceneModal extends Modal {
 	alterationDropdown?: DropdownComponent;
 	alterationText?: TextAreaComponent;
 	fateDataModal?: FateDataModal;
-	meaningDropdown?: DropdownComponent;
+	meaningSetting?: Setting;
+	alteredSetting?: Setting;
 	infoDisplay1?: DisplayValueComponent;
 	infoDisplay2?: DisplayValueComponent;
 	infoDisplay3?: DisplayValueComponent;
@@ -113,8 +114,7 @@ export class SceneModal extends Modal {
 		this.fateDataModal.setVisibility(this.scene.fate !== undefined, "CON");
 		if (this.scene.fate !== undefined)
 			this.fateDataModal.setData(this.scene.fate, tables);
-		// if (this.scene.meaning !== undefined)
-		MeaningModal.makeMeaning(this.contentEl, this.meaningDropdown, tables,
+		this.meaningSetting = MeaningModal.makeMeaning(this.contentEl, tables,
 			(meaningKind: string) => {
 				if (this.scene.meaning !== undefined) {
 					this.scene.meaning.meaningKind = meaningKind;
@@ -138,7 +138,7 @@ export class SceneModal extends Modal {
 		new Setting(this.contentEl).addDisplayValue(disp => {
 			this.infoDisplay3 = disp;
 		});
-		new Setting(this.contentEl)
+		this.alteredSetting = new Setting(this.contentEl)
 			.setDesc("Describe the scene as altered (or the interrupt scene).")
 			.setName('Alteration/Interruption')
 			.addTextArea((text) => {
@@ -253,8 +253,10 @@ export class SceneModal extends Modal {
 		if (this.fateDataModal !== undefined) this.fateDataModal.setVisibility(showFate, "CAS");
 		const cannotSetMeaning = status < SceneStatus.NeedsMeaning
 			|| this.scene.sceneType == SceneType.Expected;
-		if (this.meaningDropdown !== undefined)
-			this.meaningDropdown.setDisabled(cannotSetMeaning);
+		if (this.meaningSetting !== undefined)
+			this.meaningSetting.setVisibility(!cannotSetMeaning);
+		if (this.alteredSetting !== undefined)
+			this.alteredSetting.setVisibility(status > SceneStatus.NeedsAlterationKind); // TODO revisit
 		const [d1, d2, d3] = this.scene.toText(tables);
 		this.infoDisplay1.setValue(d1);
 		this.infoDisplay2.setValue(d2);

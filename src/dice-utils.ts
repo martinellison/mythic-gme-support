@@ -1,5 +1,5 @@
 // import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
-import { assertDefined, mTrace, mythicDice, } from './utils.js';
+import { mythicDice } from './utils.js';
 
 const DIGIT_EXPRESSION: RegExp = /^\d$/;
 const isDigit = (character: string): boolean => {

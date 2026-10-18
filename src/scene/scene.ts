@@ -3,7 +3,6 @@ import { MarkdownPostProcessorContext, } from 'obsidian';
 import { Tables } from '../tables/tables.js';
 import { EventFocus, } from '../eventfocus.js';
 import { assertDefined, mTrace, mythicDice, shorten } from '../utils.js';
-// import { Question, QuestionModal } from './question.js';
 import { FateData, ChaosProvider } from '../fatedata.js';
 import { Meaning, } from '../meaning.js';
 import { SceneType, SceneTypeSupport } from './sceneType.js';
@@ -74,6 +73,7 @@ export class Scene implements ChaosProvider {
 					case AlterationKind.Meaning:
 						if (this.meaning === undefined)
 							this.meaning = new Meaning;
+						this.meaning.makeRandom(tables); // TODO check
 						break;
 					default:
 						console.warn("unknown kind", this.kind);
@@ -84,6 +84,7 @@ export class Scene implements ChaosProvider {
 					this.focus = new EventFocus;
 				if (this.meaning === undefined)
 					this.meaning = new Meaning;
+				this.meaning.makeRandom(tables); // TODO check
 				break;
 		}
 		if (this.fate !== undefined) {
@@ -92,11 +93,12 @@ export class Scene implements ChaosProvider {
 			// mTrace('scene', "fate on", this.fate);
 		}
 		if (this.focus !== undefined) {
-			mTrace('scene', "creating focus");
-			this.focus.throwDice(tables);
-			let ent = this.focus.focusDescr(tables);
-			// mTrace('scene', "focus on", ent.text);
-			this.focus.defineSelectedObject(plugin.metadata, ent.interpretation, this.includeProtected ?? false);
+			// mTrace('scene', "creating focus");
+			this.focus.makeRandom(tables, plugin.metadata, this.includeProtected ?? false);
+			// this.focus.throwDice(tables);
+			// let ent = this.focus.focusDescr(tables);
+			// // mTrace('scene', "focus on", ent.text);
+			// this.focus.defineSelectedObject(plugin.metadata, ent.interpretation, this.includeProtected ?? false);
 		}
 		if (this.meaning !== undefined) { // TODO the permitted kinds of adjustment are different for interrupts
 			const tabSiz = this.meaning.tableSizes(tables);
@@ -205,7 +207,7 @@ export class Scene implements ChaosProvider {
 		}
 		if (this.meaning !== undefined) {
 			if (this.meaning.result1.trim() == "")
-				console.warn("unexplained meaning", this.meaning, ` (type ${this.sceneType}, kind ${this.kind})`); // TODO FIX has occurred random [0,0] description '' in 0.1.9 2026-10-04
+				console.warn("unexplained meaning", this.meaning, ` (type ${this.sceneType}, kind ${this.kind})`); /* TODO FIX has occurred random [0,0] description '' in 0.1.9 2026-10-04 + 10-18 meaning not displayed? not created? */
 			else desc3 = `${this.meaning.result1}: ${this.meaning.result2}`;
 		}
 		// mTrace('scene', desc1, descrs.join(' '));

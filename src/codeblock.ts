@@ -1,5 +1,5 @@
-import { Editor, EditorPosition } from 'obsidian';
-import { mTrace } from './utils.js';
+import { EditorPosition } from 'obsidian';
+import { mTrace, shorten } from './utils.js';
 interface EditorLike {
 	lineCount(): number;
 	getCursor(): EditorPosition;
@@ -25,47 +25,51 @@ export class CodeBlock {
 		this.kind = kind;
 		this.isInBlock = isInBlock;
 	}
-	static nonBlock(): CodeBlock {
-		return new CodeBlock(0, 0, '', false);
+	static nonBlock(start: number): CodeBlock {
+		return new CodeBlock(start, start, '', false);
+	}
+	/** check and return a non-empty string if there is an error found */
+	check(): string {
+		if (this.isInBlock) {
+			if (this.start > this.end) return `in block AND start ${this.start} > end ${this.end}`;
+		} else {
+			if (this.start != this.end) return `NOT in block AND start ${this.start} ≠ end ${this.end}`;
+		}
+		return '';
 	}
 	/** find whether the cursor is in a code block and if so find the extent */
-	static get(editor: EditorLike): CodeBlock {
+	static getBlock(editor: EditorLike): CodeBlock {
 		const lineCount = editor.lineCount();
-		mTrace('code block', `line count ${lineCount}`);
 		let cursor = editor.getCursor();
 		let lineNumber = cursor.line; // zero based
+		mTrace('code block', `line count ${lineCount}, looking forwards from ${lineNumber}`);
 		// let charPos = cursor.ch;
 		let line = '';
 		let lastLine = lineNumber;
 		for (; ;) {
+			if (lastLine >= lineCount) { mTrace('code block', `already at end ${lastLine}`); break; }
 			line = editor.getLine(lastLine).trim();
-			if (lastLine >= lineCount - 1 || line == CodeBlock.DELIM) { mTrace('code block', `at end ${lastLine}`); break; }
+			if (line == CodeBlock.DELIM) { mTrace('code block', `at end ${lastLine}`); break; }
 			lastLine++;
 		}
 		if (line != CodeBlock.DELIM) {
-			console.warn(
-				"bad last line (%d: '%s')",
-				lastLine,
-				editor.getLine(lastLine),
-			);
-			return CodeBlock.nonBlock();
+			mTrace('code block', `last line (${lastLine}: '${editor.getLine(lastLine)}') not in block`);
+			return CodeBlock.nonBlock(lastLine);
 		}
 		if (line.length > CodeBlock.DELIM.length) {
 			console.warn("last line '%s' too long", line);
 		}
 		let firstLine = lineNumber;
+		mTrace('code block', `looking backwards from ${firstLine}`);
 		for (; ;) {
+			if (firstLine < 0) { mTrace('code block', `already before start ${firstLine}`); break; }
 			line = editor.getLine(firstLine).trim();
-			if (firstLine <= 0 || line.substring(0, 3) == CodeBlock.DELIM) { mTrace('code block', `at start ${firstLine}`); break; }
+			if (firstLine == 0 || (line.substring(0, 3) == CodeBlock.DELIM && line.length > CodeBlock.DELIM.length)) { mTrace('code block', `at start ${firstLine}`); break; }
 			firstLine--;
 		}
 		if (line.substring(0, CodeBlock.DELIM.length) != CodeBlock.DELIM) {
-			console.warn(
-				"bad first line (%d '%s')",
-				firstLine,
-				editor.getLine(firstLine),
-			);
-			return CodeBlock.nonBlock();
+			mTrace('code block', `first line (${firstLine} '${line}') not in block`);
+			return CodeBlock.nonBlock(lastLine);
 		}
 		if (line.length <= CodeBlock.DELIM.length) {
 			console.warn("first line '%s' not long enough", line);
@@ -73,6 +77,14 @@ export class CodeBlock {
 		let tag = line.substring(3);
 		mTrace('code block', `start ${firstLine} end ${lastLine} tag '${tag}'`);
 		return new CodeBlock(firstLine, lastLine, tag, true);
+	}
+	/** (try to) get an empty block so we can insert a new block. Find somewhere we can put a block, start where the user's cursor is, but skip over any existing block */
+	static getEmptyBlock(editor: EditorLike): CodeBlock {
+		let block = CodeBlock.getBlock(editor);
+		mTrace('code block', block.isInBlock ? 'in' : 'not in', "block");
+		block.dump(editor, "looking for empty");
+		if (!block.isInBlock) return block;
+		return new CodeBlock(block.end + 1, block.end + 1, '', false);
 	}
 	/** find the contents of the CodeBlock, do not include header and footer */
 	contents(editor: EditorLike): string {
@@ -84,17 +96,16 @@ export class CodeBlock {
 	}
 	/** replace the block by the `json_text` and include header and footer for MarkDown */
 	replaceContents(tag: string, json_text: string, editor: EditorLike) {
-		const block = `\`\`\`${tag}\n${json_text}\n\`\`\`\n`;
+		mTrace('code block', `replacing block '${shorten(this.contents(editor))}' with '${tag}': ${this.start}..${this.end}`);
+		const block = `\n\`\`\`${tag}\n${json_text}\n\`\`\`\n`;
 		editor.replaceRange(
 			block,
 			{ line: this.start, ch: 0 },
-			{ line: this.end + 1, ch: 0 }, // TODO maybe still a problem here
+			{ line: this.end, ch: 0 },
 		);
 	}
-
 	/** check and return a non-empty string if there is an error found */
-	static check(editor: EditorLike): string {
-		const lineCount = editor.lineCount();
+	static checkAll(editor: EditorLike): string {
 		let isInBlock = false;
 		for (let lineNum = 0; lineNum < editor.lineCount(); ++lineNum) {
 			const line = editor.getLine(lineNum);
@@ -112,7 +123,13 @@ export class CodeBlock {
 					break;
 			}
 		}
+		if (isInBlock) return "block not terminated";
 		return '';
+	}
+	/** dump the code block to the trace */
+	dump(editor: EditorLike, narr?: string) {
+		mTrace('code block' + ' ' + (narr ?? '/'), JSON.stringify(this), shorten(this.contents(editor)));
+
 	}
 }
 enum LineKind {
@@ -121,9 +138,10 @@ enum LineKind {
 	// Block = '-',
 	Other = 'X',
 }
-function lineKind(line: string): LineKind {
+/** classifies the line */
+export function lineKind(line: string): LineKind {
 	const lineLength = line.length;
 	if (lineLength == CodeBlock.DELIM.length && line == CodeBlock.DELIM) return LineKind.Footer;
-	if (lineLength > CodeBlock.DELIM.length && line.substring(0, CodeBlock.DELIM.length) != CodeBlock.DELIM) return LineKind.Header;
+	if (lineLength > CodeBlock.DELIM.length && line.substring(0, CodeBlock.DELIM.length) == CodeBlock.DELIM) return LineKind.Header;
 	return LineKind.Other;
 }
