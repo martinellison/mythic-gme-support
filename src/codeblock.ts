@@ -49,8 +49,8 @@ export class CodeBlock {
 		for (; ;) {
 			if (lastLine >= lineCount) { mTrace('code block', `already at end ${lastLine}`); break; }
 			line = editor.getLine(lastLine).trim();
-			if (line == CodeBlock.DELIM) { mTrace('code block', `at end ${lastLine}`); break; }
 			lastLine++;
+			if (line == CodeBlock.DELIM) { mTrace('code block', `at end ${lastLine}`); break; }
 		}
 		if (line != CodeBlock.DELIM) {
 			mTrace('code block', `last line (${lastLine}: '${editor.getLine(lastLine)}') not in block`);
@@ -75,7 +75,11 @@ export class CodeBlock {
 			console.warn("first line '%s' not long enough", line);
 		}
 		let tag = line.substring(3);
-		mTrace('code block', `start ${firstLine} end ${lastLine} tag '${tag}'`);
+		const prevBlock = editor.getRange(
+			{ line: firstLine, ch: 0 },
+			{ line: lastLine, ch: 0 },
+		);
+		mTrace('code block', `start ${firstLine} end ${lastLine} tag '${tag}' text '${prevBlock}'`);
 		return new CodeBlock(firstLine, lastLine, tag, true);
 	}
 	/** (try to) get an empty block so we can insert a new block. Find somewhere we can put a block, start where the user's cursor is, but skip over any existing block */
@@ -91,13 +95,19 @@ export class CodeBlock {
 		if (!this.isInBlock) return '';
 		return editor.getRange(
 			{ line: this.start + 1, ch: 0 },
-			{ line: this.end, ch: 0 },
+			{ line: this.start + 2, ch: 0 },
 		);
 	}
 	/** replace the block by the `json_text` and include header and footer for MarkDown */
 	replaceContents(tag: string, json_text: string, editor: EditorLike) {
-		mTrace('code block', `replacing block '${shorten(this.contents(editor))}' with '${tag}': ${this.start}..${this.end}`);
-		const block = `\n\`\`\`${tag}\n${json_text}\n\`\`\`\n`;
+		const previousLine = editor.getLine(this.start - 1).trim();
+		const prevBlock = editor.getRange(
+			{ line: this.start, ch: 0 },
+			{ line: this.end, ch: 0 },
+		);
+		mTrace('code block', `block was <${prevBlock}>, previous line was <${previousLine}>`);
+		mTrace('code block', `replacing block with '${tag}': ${this.start}..${this.end}`);
+		const block = (previousLine == '' ? '' : '\n') + `\`\`\`${tag}\n${json_text}\n\`\`\`\n`;
 		editor.replaceRange(
 			block,
 			{ line: this.start, ch: 0 },

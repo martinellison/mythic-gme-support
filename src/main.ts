@@ -185,6 +185,7 @@ export default class MythicSupportPlugin extends Plugin {
 						let block = CodeBlock.getBlock(editor);
 						if (block.isInBlock) {
 							const source = block.contents(editor);
+							mTrace('main', "source is", source);
 							switch (block.kind) {
 								case Scene.TAG:
 									{

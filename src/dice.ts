@@ -77,7 +77,7 @@ export class DiceModal extends Modal {
 					this.close();
 					mTrace('dice', "saving dice", dice.text);
 					let diceRandom = new DiceRandom(dice.text);
-					const [result, explain] = diceRandom.throwA();
+					const [result, explain] = diceRandom.throwActual();
 					dice.result = result;
 					dice.explain = explain;
 					const json = dice.toJson();

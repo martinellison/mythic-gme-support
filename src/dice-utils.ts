@@ -54,23 +54,24 @@ export class DiceRandom {
 		return m;
 	}
 	/** This actually throws the dice, and returns the total and a text breakdown. */
-	throwA(): [number, string] {
+	throwActual(): [number, string] {
 		let total = 0;
 		let explains = new Array<string>;
 		this.items.forEach((item) => {
 			const [part, exp] = item.throw();
-			total += part; explains.push(exp);
+			total += part;
+			explains.push(exp);
 		});
 		return [total, explains.join("")];
 	}
-	static throwB(text: string): [number, string] {
+	static throw(text: string): [number, string] {
 		const d = new DiceRandom(text);
 		if (!d.ok) {
 			const msg = `badly formatted dice expression '${text}'`;
 			console.warn("(dice)", msg);
 			return [0, msg];
 		}
-		return d.throwA();
+		return d.throwActual();
 	}
 }
 /** part of a random */
@@ -79,7 +80,9 @@ export class DiceItem {
 	numDice: number = 1;
 	die: number = 1; // 0 means constant value
 	constructor(sign: string = "+", numDice: number = 1, die: number = 1) {
-		this.sign = sign; this.numDice = numDice; this.die = die;
+		this.sign = sign;
+		this.numDice = numDice;
+		this.die = die;
 	}
 	/** returns the smallest number that the dice can throw */
 	min(): number {
@@ -89,17 +92,29 @@ export class DiceItem {
 	max(): number {
 		return this.die == 0 ? (this.sign == "-" ? - this.numDice : this.numDice) : (this.numDice * (this.sign == "-" ? -1 : this.die));
 	}
+	/** explain the sign to the player */
+	signExplain(): string {
+		switch (this.sign) {
+			case ' ':
+			case '+':
+				return '+';
+			case '-':
+				return '-';
+			default:
+				return '?';
+		}
+	}
 	throw(): [number, string] {
 		let part = 0;
 		let explains = new Array<string>;
 		if (this.die == 0) {
 			part = this.numDice;
-			explains.push(`${this.sign}${part}`);
+			explains.push(`${this.signExplain()}${part}`);
 		} else {
 			for (let i = 0; i < this.numDice; i++) {
 				const thrown = mythicDice(this.die);
 				part += thrown;
-				explains.push(`${this.sign}${thrown}`);
+				explains.push(`${this.signExplain()}${thrown}`);
 			}
 		}
 		if (this.sign == "-")
