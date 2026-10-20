@@ -1,5 +1,5 @@
 import { Type, plainToInstance, instanceToPlain, Expose } from 'class-transformer';
-import { Modal, App, Setting, MarkdownPostProcessorContext, DropdownComponent, DisplayValueComponent, } from 'obsidian';
+import { Modal, App, Setting, MarkdownPostProcessorContext, DisplayValueComponent, } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
 import { Tables } from './tables/tables.js';
 import { EventFocus, } from './eventfocus.js';

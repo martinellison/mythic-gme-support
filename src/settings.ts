@@ -38,8 +38,9 @@ export class MythicSettingTab extends PluginSettingTab {
 		plugin.registerEvent(this.app.vault.on('delete', refresh));
 		plugin.registerEvent(this.app.vault.on('rename', refresh));
 	}
-	display() { console.error("display should not be called"); }
-	getSettingDefinitions(): SettingDefinitionItem__[] {
+	/// should not be called but required by compiler
+	display() { } // TODO obsidian wants to get rid of this
+	getSettingDefinitions(): SettingDefinitionItem__[] { // TODo obsidian doe not like SettingDefinitionItem__
 		return [
 			{ name: "Auto scan lists", desc: "automatically recreate lists", control: { type: 'toggle', defaultValue: true, key: 'autoScanLists' } },
 			{ name: "Adventure folder", desc: "folder containing the current adventure", control: { type: 'folder', defaultValue: this.app.vault.getRoot().path, key: 'adventureFolder' } },

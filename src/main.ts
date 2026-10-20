@@ -23,7 +23,7 @@ import { Dice, DiceModal } from './dice.js';
 import { Meaning, MeaningModal } from './meaning.js';
 import { SceneTypeSupport } from './scene/sceneType.js';
 import { KdlTables } from './tables/kdl.js';
-import { assertDefined, mTrace, mythicDice } from './utils.js';
+import { assertDefined, mTrace } from './utils.js';
 /** the plugin */
 export default class MythicSupportPlugin extends Plugin {
 	settings!: MythicSupportPluginSettings;
@@ -88,7 +88,7 @@ export default class MythicSupportPlugin extends Plugin {
 					}
 
 					new CreateModal(this.app, this.tables, (kind: MythicObjectKind, objectKind: string, selection: boolean) => {
-						let cursor: EditorPosition = editor.getCursor();
+						// let cursor: EditorPosition = editor.getCursor();
 						// let startLine = startBlock.isInBlock ? startBlock.end + 1 : cursor.line;
 						const startLine = startBlock.end;
 						mTrace('main create', `start line ${startLine}`);

@@ -1,9 +1,5 @@
-body {
-    color: white;
-    background-color: black;
-}
 .mythic-scene {
-    color: lightblue;
+    color: rgb(107, 133, 142);
     font-size: 110%;
     display: inline;
 }
@@ -14,7 +10,7 @@ body {
     content: '»';
 }
 .mythic-object {
-    color: lightgrey;
+    color: rgb(128, 128, 128);
     display: inline;
 }
 .mythic-object:before {
@@ -24,7 +20,7 @@ body {
     content: '»';
 }
 .mythic-question {
-    color: pink;
+    color: rgb(233, 150, 0);
     display: inline;
 }
 .mythic-question:before {
@@ -34,11 +30,11 @@ body {
     content: '»';
 }
 .mythic-thread {
-    color: sandybrown;
+    color: rgb(4, 375, 3);
     display: inline;
 }
 .mythic-character {
-    color: cyan;
+    color: rgb(0, 192, 192);
     display: inline;
 }
 .mythic-character:before {
@@ -48,7 +44,7 @@ body {
     content: '»';
 }
 .mythic-adventure {
-    color: yellow;
+    color: rgb(0, 192, 192);
     font-size: 110%;
     display: inline;
 }
@@ -62,7 +58,7 @@ body {
     text-decoration: line-through;
 }
 .mythic-oracle {
-    color: goldenrod;
+    color: rgb(249, 97, 36);
     display: inline;
 }
 .mythic-oracle:before {
@@ -72,7 +68,7 @@ body {
     content: '»';
 }
 .mythic-dice {
-    color: turquoise;
+    color: rgb(47, 181, 154);
     display: inline;
 }
 .mythic-dice:before {
@@ -82,7 +78,7 @@ body {
     content: '»';
 }
 .mythic-meaning {
-    color: mediumorchid;
+    color: rgb(140, 0, 243);
     display: inline;
 }
 .mythic-meaning:before {
@@ -92,7 +88,7 @@ body {
     content: '»';
 }
 .mythic-random {
-    color: magenta;
+    color: rgb(192, 0, 192);
     display: inline;
     /* font-size: 90%; */
 }
@@ -103,7 +99,7 @@ body {
     content: ']';
 }
 .mythic-fate {
-    color: limegreen;
+    color: rgb(150, 82, 150);
     display: inline;
     font-size: 90%;
 }
@@ -114,7 +110,7 @@ body {
     content: ']';
 }
 .mythic-focus {
-    color: skyblue;
+    color: rgb(62, 258, 62);
     display: inline;
     font-size: 90%;
 }
