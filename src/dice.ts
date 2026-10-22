@@ -52,7 +52,8 @@ export class DiceModal extends Modal {
 	constructor(app: App, dice: Dice, block: CodeBlock) {
 		super(app);
 		this.dice = dice;
-		this.setTitle('Dice'); new Setting(this.contentEl)
+		this.setTitle('Dice');
+		new Setting(this.contentEl)
 			.setName('Description')
 			.addText((text) => {
 				text.setValue(this.dice.description);

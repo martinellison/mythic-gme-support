@@ -1,5 +1,5 @@
 import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
-import { Modal, App, Setting, MarkdownPostProcessorContext, DropdownComponent } from 'obsidian';
+import { Modal, App, Setting, MarkdownPostProcessorContext } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
 import { assertDefined, mTrace, mythicDice, shorten } from './utils.js';
 import { Oracle, Tables } from './tables/tables.js';

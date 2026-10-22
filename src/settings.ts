@@ -1,5 +1,5 @@
 import { App, debounce, Modal, PluginSettingTab, Setting } from 'obsidian';
-import type { SettingDefinitionItem__ } from 'obsidian';
+import type { SettingDefinitionItem__, TFile } from 'obsidian';
 import { mTrace } from './utils.js';
 import MythicSupportPlugin from './main.js';
 
@@ -22,6 +22,12 @@ export class SettingsHelper {
 		}
 		return settings.tableFiles[0] ?? DEFAULT_TABLES_FILE;
 	}
+	static fileInAdventure(settings: MythicSupportPluginSettings, file: TFile): boolean {
+		const folderLength = settings.adventureFolder.length;
+		const isIn = file.path.substring(0, folderLength) == settings.adventureFolder;
+		mTrace('settings', `file '${file.path}' ${isIn ? "is" : "is not"} in adventure folder '${settings.adventureFolder}' `);
+		return isIn;
+	}
 }
 
 /** this implements the plugin settings modal. It doesn't implement any specific part of the MGME book. */
@@ -40,7 +46,7 @@ export class MythicSettingTab extends PluginSettingTab {
 	}
 	/// should not be called but required by compiler
 	display() { } // TODO obsidian wants to get rid of this
-	getSettingDefinitions(): SettingDefinitionItem__[] { // TODo obsidian doe not like SettingDefinitionItem__
+	getSettingDefinitions(): SettingDefinitionItem__[] { // TODO obsidian does not like SettingDefinitionItem__
 		return [
 			{ name: "Auto scan lists", desc: "automatically recreate lists", control: { type: 'toggle', defaultValue: true, key: 'autoScanLists' } },
 			{ name: "Adventure folder", desc: "folder containing the current adventure", control: { type: 'folder', defaultValue: this.app.vault.getRoot().path, key: 'adventureFolder' } },

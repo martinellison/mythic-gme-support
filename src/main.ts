@@ -6,10 +6,11 @@ import {
 	App,
 	Modal,
 	Setting,
-	EditorPosition,
+	TextComponent,
+	DisplayValueComponent,
 } from 'obsidian';
 /** @document summary.md */
-import { DEFAULT_SETTINGS, MythicSettingTab, MythicSupportPluginSettings } from './settings.js';
+import { DEFAULT_SETTINGS, MythicSettingTab, MythicSupportPluginSettings, SettingsHelper } from './settings.js';
 import { CodeBlock } from './codeblock.js';
 import 'reflect-metadata';
 import { Scene, } from './scene/scene.js';
@@ -78,9 +79,19 @@ export default class MythicSupportPlugin extends Plugin {
 							null
 						);
 					}
-					// LATER check whether this block is inside the adventure folder
-					// LATER also, refactor the calling sequence 
-					// find somewhere we can put a block, start where the user's cursor is, but skip over any existing block
+					if (this.fixFolderPath(view)) return true;
+					// if (view instanceof MarkdownView) {
+					// 	const file = view.getFile();
+					// 	if (file && !SettingsHelper.fileInAdventure(this.settings, file)) {
+					// 		const lastSlash = file.path.lastIndexOf('/');
+					// 		const suggest = file.path.substring(0, lastSlash);
+					// 		new AdventureFolderModal(app, suggest, (newPath) => {
+					// 			this.settings.adventureFolder = newPath;
+					// 			void this.saveData(this.settings);
+					// 		}).open();
+					// 		return true;
+					// 	}
+					// }
 					const startBlock = CodeBlock.getEmptyBlock(editor);
 					mTrace('main', "creating block at", JSON.stringify(startBlock));
 					if (startBlock.isInBlock) {
@@ -181,7 +192,7 @@ export default class MythicSupportPlugin extends Plugin {
 						);
 					}
 					try {
-						// LATER check whether this block is inside the adventure folder
+						if (this.fixFolderPath(view)) return true;
 						let block = CodeBlock.getBlock(editor);
 						if (block.isInBlock) {
 							const source = block.contents(editor);
@@ -316,6 +327,21 @@ export default class MythicSupportPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+	fixFolderPath(view: MarkdownView | MarkdownFileInfo): boolean {
+		if (view instanceof MarkdownView) {
+			const file = view.getFile();
+			if (file && !SettingsHelper.fileInAdventure(this.settings, file)) {
+				const lastSlash = file.path.lastIndexOf('/');
+				const suggest = file.path.substring(0, lastSlash);
+				new AdventureFolderModal(app, suggest, (newPath) => {
+					this.settings.adventureFolder = newPath;
+					void this.saveData(this.settings);
+				}).open();
+				return true;
+			}
+		}
+		return false;
+	}
 	// settings() : MythicSupportPluginSettings {
 	// 	this.settings
 	// }
@@ -378,6 +404,40 @@ export class CreateModal extends Modal {
 				.onClick(() => {
 					this.close();
 					onCreate(kind, meta, selection);
+				}),
+		).addButton((btn) =>
+			btn
+				.setButtonText('Cancel')
+				.setCta()
+				.onClick(() => {
+					this.close();
+				}),
+		);
+	}
+}
+/// modal to set the folder name
+export class AdventureFolderModal extends Modal {
+	folderName: string = "";
+	constructor(app: App, suggestedFolderName: string, onSetFolder: (folderName: string) => void) {
+		super(app);
+		this.folderName = suggestedFolderName;
+		this.setTitle('Fix folder name');
+		new Setting(this.contentEl).addDisplayValue((displayValue: DisplayValueComponent) => {
+			displayValue.setValue("Enter the name of the folder for this adventure");
+		});
+		new Setting(this.contentEl).setName('Folder path')
+			.addText((folderNameText: TextComponent) => {
+				folderNameText.setValue(this.folderName)
+					.onChange((value) => { this.folderName = value; });
+			}
+			);
+		new Setting(this.contentEl).addButton((btn) =>
+			btn
+				.setButtonText('Fix')
+				.setCta()
+				.onClick(() => {
+					this.close();
+					onSetFolder(this.folderName);
 				}),
 		).addButton((btn) =>
 			btn

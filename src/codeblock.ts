@@ -37,7 +37,10 @@ export class CodeBlock {
 		}
 		return '';
 	}
-	/** find whether the cursor is in a code block and if so find the extent */
+	/** find whether the cursor is in a code block and if so find the extent. 
+	 * 
+	 The line numbers are 0-based
+	 */
 	static getBlock(editor: EditorLike): CodeBlock {
 		const lineCount = editor.lineCount();
 		let cursor = editor.getCursor();
@@ -64,7 +67,10 @@ export class CodeBlock {
 		for (; ;) {
 			if (firstLine < 0) { mTrace('code block', `already before start ${firstLine}`); break; }
 			line = editor.getLine(firstLine).trim();
-			if (firstLine == 0 || (line.substring(0, 3) == CodeBlock.DELIM && line.length > CodeBlock.DELIM.length)) { mTrace('code block', `at start ${firstLine}`); break; }
+			if (firstLine == 0 || (line.substring(0, 3) == CodeBlock.DELIM && line.length > CodeBlock.DELIM.length)) {
+				mTrace('code block', `at start ${firstLine}`);
+				break;
+			}
 			firstLine--;
 		}
 		if (line.substring(0, CodeBlock.DELIM.length) != CodeBlock.DELIM) {
@@ -100,7 +106,7 @@ export class CodeBlock {
 	}
 	/** replace the block by the `json_text` and include header and footer for MarkDown */
 	replaceContents(tag: string, json_text: string, editor: EditorLike) {
-		const previousLine = editor.getLine(this.start - 1).trim();
+		const previousLine = this.start <= 0 ? "" : editor.getLine(this.start - 1).trim();
 		const prevBlock = editor.getRange(
 			{ line: this.start, ch: 0 },
 			{ line: this.end, ch: 0 },
