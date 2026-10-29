@@ -2,7 +2,7 @@ import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
 import { Modal, App, Setting, MarkdownPostProcessorContext } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
 import { MythicObjectMeta, Tables, ThingFamily } from './tables/tables.js';
-import { assertDefined, shorten } from './utils.js';
+import { assertDefined, mTrace, shorten } from './utils.js';
 import { Metadata } from './metadata.js';
 import MythicSupportPlugin from './main.js';
 
@@ -86,6 +86,7 @@ export class MythicObject {
 				if (oracle === undefined) {
 					divElt.createDiv({ text: `oracle ${object.kind} not found`, cls: 'mythic-error' });
 				} else {
+					mTrace('object', `dice throw is ${object.diceThrow}`);
 					const entry = oracle.entries.resolve(object.diceThrow);
 					divElt.createSpan({ text: ` (${meta.displayName} oracle) ` });
 					divElt.createEl('b', { text: ` ${entry.text}` });

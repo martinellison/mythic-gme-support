@@ -1,13 +1,12 @@
 import { Type, plainToInstance, instanceToPlain, Expose } from 'class-transformer';
-import { Modal, App, Setting, MarkdownPostProcessorContext, DisplayValueComponent, } from 'obsidian';
+import { Modal, App, Setting, MarkdownPostProcessorContext, } from 'obsidian';
 import { CodeBlock } from './codeblock.js';
 import { Tables } from './tables/tables.js';
-import { EventFocus, } from './eventfocus.js';
 import { mTrace, shorten } from './utils.js';
 import { Metadata } from './metadata.js';
-import { Meaning, MeaningModal } from './meaning.js';
-import { ChaosProvider, FateData, FateDataModal } from './fatedata.js';
 import MythicSupportPlugin from './main.js';
+import { ChaosProvider, FateData } from './fateData/fatedata.js';
+import { FateDataModal } from './fateData/fateDataModal.js';
 const NONIDENT = /[^a-zA-Z0-9]+/g;
 /** fate check modifier line in a table. */
 export class QuestionOdds {
@@ -29,45 +28,16 @@ export class Question implements ChaosProvider {
 		mTrace('question', `chaos factor is: ${this.chaosFactor}`);
 		return this.chaosFactor;
 	}
+	setChaos(chaos: number): void {
+		this.chaosFactor = chaos;
+	}
 	static readonly TAG = "mythic-question";
 	@Type(() => FateData)
 	@Expose() fateData: FateData = new FateData(this);
 	@Expose() chaosFactor: number = 5;
-	@Expose() hasRandom: boolean = false;
-	@Expose() meaningKind: string = "action1";
-	@Type(() => EventFocus)
-	@Expose() focus?: EventFocus;
-	@Type(() => Meaning)
-	@Expose() meaning?: Meaning;
-	@Expose() includeProtected?: boolean;
 	constructor(description: string) {
 		this.fateData = new FateData(this);
-		this.focus = undefined;
-		this.meaning = undefined;
 		this.chaosFactor = 5;
-	}
-	/** create or remove a random event */
-	makeRandomEvent(isRandom: boolean, tables: Tables, metadata: Metadata) {
-		mTrace('question', `random set to${isRandom ? "" : " not"} random`);
-		if (isRandom) {
-			if (this.meaning == undefined) {
-				this.meaning = new Meaning(this.meaningKind);
-				this.meaning.makeRandom(tables);
-				// const tabSiz = this.meaning.tableSizes(tables);
-				// this.meaning.throwDice(tabSiz);
-				// this.meaning.explain(tables);
-			}
-			if (this.focus == undefined) {
-				this.focus = new EventFocus();
-				// this.focus.throwDice(tables);
-				// let ent = this.focus.focusDescr(tables);
-				// this.focus.defineSelectedObject(metadata, ent.interpretation, this.includeProtected ?? false);
-				this.focus.makeRandom(tables, metadata, this.includeProtected ?? false);
-			}
-		} else {
-			this.focus = undefined;
-			this.meaning = undefined;
-		}
 	}
 	/** convert from a JSON string */
 	static fromJson(source: string): Question {
@@ -77,7 +47,7 @@ export class Question implements ChaosProvider {
 			let question: Question = plainToInstance(Question, JSON.parse(source), { excludeExtraneousValues: true });
 			if (question.fateData === undefined) question.fateData = new FateData(question);
 			question.fateData.chaosProvider = question;
-			if (question.includeProtected == undefined) question.includeProtected = false;
+			question.fateData.afterLoad();
 			return question;
 		} catch (error) {
 			console.error("error parsing object: ", error, "reading:", shorten(source));
@@ -86,104 +56,52 @@ export class Question implements ChaosProvider {
 	}
 	/** convert to a JSON string */
 	toJson(): string {
-		if (this.includeProtected == false) this.includeProtected = undefined;
+		// if (this.fateData !== undefined)
+		this.fateData.beforeUnload();
 		return JSON.stringify(instanceToPlain(this));
 	}
 	/** describe the scene in plain text */
-	toText(tables: Tables): string {
-		let texts = new Array<string>; try {
-			// if (this.fateData !== undefined)
-			// 	texts.push(this.fateData.toText(tables));
-			if (this.hasRandom) {
-				texts.push("Random event ");
-				if (this.focus !== undefined) {
-					texts.push(this.focus.toText(tables));
-				}
-				if (this.meaning !== undefined) {
-					texts.push(this.meaning.result2);
-				}
-			}
-			if (this.includeProtected) texts.push(", include protected");
-		} catch (error) {
-			const msg = `error in question: ${error as Error}`;
-			console.error(msg);
-			texts.push(msg);
-		}
-		return texts.join(" ");
+	asText(tables: Tables): string {
+		return this.fateData.asText(tables);
 	}
 	/** create HTML for display */
 	static toHtml(source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext, tables: Tables) {
 		let divElt: HTMLDivElement = el.createDiv({ cls: 'mythic-question' });
 		try {
 			const question: Question = Question.fromJson(source);
+			question.fateData.afterLoad();
 			divElt.createSpan({ text: "(question) " });
-			if (question.fateData !== undefined)
-				question.fateData.toHtml(divElt, tables);
-
-			if (question.hasRandom) {
-				divElt.createSpan({ text: "Random event ", cls: 'mythic-random' });
-				if (question.focus !== undefined) {
-					question.focus.toHtml(divElt, tables);
-				}
-				if (question.meaning !== undefined) {
-					divElt.createDiv({ text: question.meaning.result1, cls: 'mythic-random' });
-					divElt.createEl('b', { text: question.meaning.result2, cls: 'mythic-random' });
-				}
-			}
-			if (question.includeProtected) divElt.createSpan({ text: " include protected" });
+			// if (question.fateData !== undefined)
+			question.fateData.asHtml(divElt, tables);
 		} catch (error) {
 			const msg = `error when parsing question: ${error as Error}`;
 			console.error(msg);
 			divElt.createSpan({ text: msg, cls: 'mythic-error' });
 		}
 	}
-	throwDice(tables: Tables, metadata: Metadata): void {
-		// for (let d = 0; d < 2; d++) this.dice[d] = mythicDice(10);// dice max is for a Fate Check
-		this.fateData.throwDice();
-		const isRandom = this.fateData.isRandom();
-		this.makeRandomEvent(isRandom, tables, metadata);
-	}
+
 }
-/** create a Modal for the user interface to a Question. */
+/** create a Modal for the user interface to a Question. 
+ 
+main controls are:	
+	fate data (multiple controls, controlled by FateDataModal, which see)
+*/
 export class QuestionModal extends Modal {
 	question: Question;
-	hasRandom: boolean = false;
 	meaningSetting?: Setting;
-	infoDisplay1?: DisplayValueComponent;
 	// questionDataModal: QuestionDataModal;
 	constructor(app: App, question: Question, block: CodeBlock, tables: Tables, plugin: MythicSupportPlugin, metadata: Metadata) {
 		super(app);
 		this.question = question;
 		this.setTitle('Question');
-		new Setting(this.contentEl).setName('Chaos')
-			.setDesc("The current Chaos Factor").addSlider((slider) => {
-				slider.setLimits(1, 9, 1).setInstant(true).setValue(this.question.chaosFactor).onChange((value) => {
-					this.question.chaosFactor = value;
-				});
-			});
-		new Setting(this.contentEl).setName('Include protected')
-			.setDesc("include protected objects in any random selection")
-			.addToggle((toggle) => {
-				toggle.setValue(this.question.includeProtected ?? false)
-					.onChange((value) => { this.question.includeProtected = value; });
-			});
-		let fateDataModal = new FateDataModal(this.contentEl, tables, (isRandom) => {
-			this.question.makeRandomEvent(isRandom, tables, metadata);
-			this.setRandom(isRandom, tables);
+		let fateDataModal = new FateDataModal(this.contentEl, tables, metadata, (isRandom) => {
+			// this.question.makeRandomEvent(isRandom, tables, metadata);
+			// this.setRandom(isRandom, tables);
 			/* TODO iff is random, create a random event i.e. focus and question */
 		});
 		fateDataModal.setVisibility(true, "Q");
 		fateDataModal.setData(question.fateData, tables);
-		this.meaningSetting = MeaningModal.makeMeaning(this.contentEl, tables,
-			(value) => {
-				if (this.question.meaning !== undefined)
-					this.question.meaning.meaningKind = value;
-				this.question.meaningKind = value;
-				this.question.makeRandomEvent(this.hasRandom, tables, metadata);
-			}, this.question.meaning);
-		new Setting(this.contentEl).addDisplayValue(disp => {
-			this.infoDisplay1 = disp;
-		});
+
 		new Setting(this.contentEl)
 			.addButton((btn) => btn
 				.setButtonText('Cancel')
@@ -202,29 +120,23 @@ export class QuestionModal extends Modal {
 					if (editor !== undefined)
 						block.replaceContents(Question.TAG, json, editor);
 				}));
-		this.setRandom(this.hasRandom, tables);
+		// this.setRandom(this.hasRandom, tables);
 	}
-	/** updates the Modal to reflect whether a random event has occurred. */
-	setRandom(hasRandom: boolean, tables: Tables) {
-		this.question.hasRandom = hasRandom;
-		this.hasRandom = hasRandom;
-		this.meaningSetting?.setVisibility(hasRandom);
-		// if (this.dropdownComponent !== undefined)
-		if (this.infoDisplay1 !== undefined)
-			this.infoDisplay1.setValue(this.question.toText(tables));
-	}
-	/** returns the text for a save button. */
-	static buttonText(kind: QuestionButtonKind): string {
-		switch (kind) {
-			case QuestionButtonKind.Save:
-				return "Save";
-			case QuestionButtonKind.ThrowDice:
-				return "Throw dice and save";
-			default:
-				return "?";
-		}
-	}
+	// /** returns the text for a save button. */
+	// static buttonText(kind: QuestionButtonKind): string {
+	// 	switch (kind) {
+	// 		case QuestionButtonKind.Save:
+	// 			return "Save";
+	// 		case QuestionButtonKind.ThrowDice:
+	// 			return "Throw dice and save";
+	// 		default:
+	// 			return "?";
+	// 	}
+	// }
+	// checkAndShow() {
+	// 	// const status = this.question.checkStatus();
+	// }
 }
-const enum QuestionButtonKind {
-	ThrowDice, Save,
-}
+// const enum QuestionButtonKind {
+// 	ThrowDice, Save,
+// }

@@ -4,30 +4,38 @@ import { CodeBlock } from '../codeblock.js';
 import { Tables } from '../tables/tables.js';
 import { assertDefined, mTrace, } from '../utils.js';
 // import { Question, QuestionModal } from './question.js';
-import { FateDataModal as FateDataModal } from '../fatedata.js';
-import { MeaningModal } from '../meaning.js';
+// import { FateDataModal as FateDataModal } from '../fateData/fatedata.js';
+// import { MeaningModal } from '../meaning.js';
 import { Scene, SceneStatus } from './scene.js';
 import { SceneType } from './sceneType.js';
 import { AlterationKind, AlterationSupport } from './alteration.js';
 import { AdjustmentSupport } from './adjustment.js';
 import MythicSupportPlugin from '../main.js';
+import { FateDataModal } from '../fateData/fateDataModal.js';
+// import { FateDataModal } from '../fateData/fateDataModal.js';
 
-/** create a Modal for the user interface to a Scene. */
+/** create a Modal for the user interface to a Scene. 
+
+main controls are:
+	expected
+	alter (kind)
+	fate data (multiple controls, controlled by FateDataModal, which see)
+	altered
+*/
 export class SceneModal extends Modal {
 	scene: Scene;
 	action: string = "Save";
-	mandDisplay?: DisplayValueComponent;
 	saveButton?: ButtonComponent;
 	randomButton?: ButtonComponent;
 	alterationDropdown?: DropdownComponent;
 	alterationText?: TextAreaComponent;
-	fateDataModal?: FateDataModal;
-	meaningSetting?: Setting;
+	// fateDataModal?: FateDataModal;
 	alteredSetting?: Setting;
+	mandDisplay?: DisplayValueComponent; // mandate to user what to do next
 	infoDisplay1?: DisplayValueComponent;
-	infoDisplay2?: DisplayValueComponent;
-	infoDisplay3?: DisplayValueComponent;
-	hasRandom: boolean = false;
+	// infoDisplay2?: DisplayValueComponent;
+	// infoDisplay3?: DisplayValueComponent; // apparently not used TODO check
+	fateDataModal?: FateDataModal;
 	constructor(creating: boolean, app: App, scene: Scene, block: CodeBlock, tables: Tables, plugin: MythicSupportPlugin) {
 		super(app);
 		this.scene = scene;
@@ -36,21 +44,14 @@ export class SceneModal extends Modal {
 		new Setting(this.contentEl).addDisplayValue(disp => {
 			this.mandDisplay = disp;
 		});
-		new Setting(this.contentEl).setName('Ident')
-			.setDesc("Identifier for this scene")
+		new Setting(this.contentEl).setName('Scene number')
+			.setDesc("To identify this scene.")
 			.addText((text) => {
 				text.setValue(this.scene.ident);
 				text.onChange((value) => {
 					if (parseInt(value) !== undefined)
 						this.scene.ident = value;
-					this.checkAndShow(tables, "ident");
-				});
-			});
-		new Setting(this.contentEl).setName('Chaos')
-			.setDesc("The current Chaos Factor").addSlider((slider) => {
-				slider.setLimits(1, 9, 1).setInstant(true).setValue(this.scene.chaos).onChange((value) => {
-					this.scene.chaos = value;
-					this.checkAndShow(tables, "chaos");
+					this.checkStatusAndShow(tables, "ident");
 				});
 			});
 		new Setting(this.contentEl)
@@ -59,7 +60,7 @@ export class SceneModal extends Modal {
 				text.setValue(this.scene.expected);
 				text.onChange((value) => {
 					this.scene.expected = value;
-					this.checkAndShow(tables, "exp");
+					this.checkStatusAndShow(tables, "exp");
 				});
 			});
 		new Setting(this.contentEl)
@@ -70,7 +71,7 @@ export class SceneModal extends Modal {
 					.setCta()
 					.onClick(() => {
 						this.scene.setRandom(tables, plugin);
-						this.checkAndShow(tables, "dice");
+						this.checkStatusAndShow(tables, "dice");
 					});
 			});
 		new Setting(this.contentEl)
@@ -94,50 +95,61 @@ export class SceneModal extends Modal {
 					// this.fateDataModal.data = this.scene.fate;
 					// this.scene.setRandom(tables, plugin);
 					this.showAlterationKind(tables);
-					if (this.scene.fate !== undefined) {
-						assertDefined(this.fateDataModal, 'scene');
-						this.fateDataModal.setVisibility(true);
-						this.fateDataModal.setData(this.scene.fate, tables);
-					}
+					// if (this.scene.fate !== undefined) {
+					// 	assertDefined(this.fateDataModal, 'scene');
+					// 	this.fateDataModal.setVisibility(true);
+					// 	this.fateDataModal.setData(this.scene.fate, tables);
+					// }
 					if (this.scene.kind == AlterationKind.Adjustment && this.scene.adjustment !== undefined && this.scene.adjustment?.length == 0)
 						AdjustmentSupport.addSceneAdjustment(this.scene.adjustment);
-					this.checkAndShow(tables, "alter");
+					this.checkStatusAndShow(tables, "alter");
 				});
 			});
-		if (this.fateDataModal === undefined)
-			this.fateDataModal = new FateDataModal(this.contentEl, tables,
-				(isRandom) => {
-					this.setRandom(isRandom);
-					/* TODO what if random? */
-					this.checkAndShow(tables, "fate");
-				});
-		this.fateDataModal.setVisibility(this.scene.fate !== undefined, "CON");
-		if (this.scene.fate !== undefined)
+		if (this.scene.fate !== undefined) {
+			if (this.fateDataModal === undefined)
+				this.fateDataModal = new FateDataModal(this.contentEl, tables, plugin.metadata);
 			this.fateDataModal.setData(this.scene.fate, tables);
-		this.meaningSetting = MeaningModal.makeMeaning(this.contentEl, tables,
-			(meaningKind: string) => {
-				if (this.scene.meaning !== undefined) {
-					this.scene.meaning.meaningKind = meaningKind;
-					this.scene.meaning.explain(tables);
-					// mTrace('scene', "after meaning, meaning is", this.scene.meaning);
-				}
-				this.checkAndShow(tables, "mean");
-			}, this.scene.meaning);
-		new Setting(this.contentEl).setName('Include protected')
-			.setDesc("include protected objects in any random selection")
-			.addToggle((toggle) => {
-				toggle.setValue(this.scene.includeProtected ?? false)
-					.onChange((value) => { this.scene.includeProtected = value; });
-			});
-		new Setting(this.contentEl).addDisplayValue(disp => {
+			this.fateDataModal.setVisibility(true);
+		}
+
+		// 		(isRandom) => {
+		// 			mTrace('scene modal', "creating fate data modal", isRandom ? ", random" : ", not random");
+		// 			this.setRandom(isRandom);
+		// 			/* TODO what if random? */
+		// 			this.checkStatusAndShow(tables, "fate");
+		// 		});
+		// this.fateDataModal.setVisibility(this.scene.fate !== undefined, "CON");
+		// if (this.scene.fate !== undefined)
+		// 	this.fateDataModal.setData(this.scene.fate, tables);
+		// this.meaningSetting = MeaningModal.makeMeaning(this.contentEl, tables,
+		// 	(meaningKind: string) => {
+		// 		if (this.scene.fate !== undefined) {
+		// 			if (this.scene.fate?.meaning !== undefined) {
+		// 				this.scene.fate.meaning.meaningKind = meaningKind;
+		// 				this.scene.fate.meaning.explain(tables);
+		// 			}
+		// 			// mTrace('scene', "after meaning, meaning is", this.scene.meaning);
+		// 		}
+		// 		this.checkStatusAndShow(tables, "mean");
+		// // 	}, this.scene.fate?.meaning);
+		// new Setting(this.contentEl).setName('Include protected')
+		// 	.setDesc("include protected objects in any random selection")
+		// 	.addToggle((toggle) => {
+		// 		toggle.setValue(this.scene.fate?.includeProtected ?? false)
+		// 			.onChange((value) => {
+		// 				if (this.scene.fate !== undefined)
+		// 					this.scene.fate.includeProtected = value;
+		// 			});
+		// 	});
+		new Setting(this.contentEl)./* setDesc("S1"). */addDisplayValue(disp => {
 			this.infoDisplay1 = disp;
 		});
-		new Setting(this.contentEl).addDisplayValue(disp => {
-			this.infoDisplay2 = disp;
-		});
-		new Setting(this.contentEl).addDisplayValue(disp => {
-			this.infoDisplay3 = disp;
-		});
+		// new Setting(this.contentEl).setDesc("S2").addDisplayValue(disp => {
+		// 	this.infoDisplay2 = disp;
+		// });
+		// new Setting(this.contentEl).setDesc("S3").addDisplayValue(disp => {
+		// 	this.infoDisplay3 = disp;
+		// });
 		this.alteredSetting = new Setting(this.contentEl)
 			.setDesc("Describe the scene as altered (or the interrupt scene).")
 			.setName('Alteration/Interruption')
@@ -148,7 +160,7 @@ export class SceneModal extends Modal {
 				text.onChange((value) => {
 					this.scene.alteration = value;
 					// mTrace('scene', "setting alteration to", this.scene.alteration);
-					this.checkAndShow(tables, "res");
+					this.checkStatusAndShow(tables, "res");
 				});
 			});
 		new Setting(this.contentEl)
@@ -174,12 +186,13 @@ export class SceneModal extends Modal {
 						this.close();
 					}),
 			);
-		this.checkAndShow(tables, "start");
+		this.checkStatusAndShow(tables, "start");
 	}
 	/** set the SceneModal after throwing the 'dice' to randomise away from the expected scene. */
 	setRandom(hasRandom: boolean) {
-		this.hasRandom = hasRandom;
-		this.scene.hasRandom = hasRandom;
+		// this.hasRandom = hasRandom;
+		if (this.scene.fate !== undefined)
+			this.scene.fate.hasRandom = hasRandom;
 	}
 	/** display the alteration kind. */
 	showAlterationKind(tables: Tables) {
@@ -188,18 +201,18 @@ export class SceneModal extends Modal {
 			case AlterationKind.Next: break;
 			case AlterationKind.Tweak: break;
 			case AlterationKind.FateQuestion:
-				assertDefined(this.fateDataModal, 'scene');
-				if (this.fateDataModal.fateData == undefined) {
-					assertDefined(this.scene.fate, 'scene');
-					this.fateDataModal.setData(this.scene.fate, tables);
-				}
+				// assertDefined(this.fateDataModal, 'scene');
+				// if (this.fateDataModal.fateData === undefined) {
+				// 	assertDefined(this.scene.fate, 'scene');
+				// 	this.fateDataModal.setData(this.scene.fate, tables);
+				// }
 				break;
 			case AlterationKind.Meaning: break;
 			case AlterationKind.Adjustment: break;
 		}
 	}
 	/** check the Scene and display its current status in the SceneModal. */
-	checkAndShow(tables: Tables, narr?: string): void {
+	checkStatusAndShow(tables: Tables, narr?: string): void {
 		assertDefined(this.mandDisplay, 'scene');
 		assertDefined(this.saveButton, 'scene');
 		assertDefined(this.randomButton, 'scene');
@@ -207,9 +220,9 @@ export class SceneModal extends Modal {
 		assertDefined(this.alterationText, 'scene');
 		// assertDefined(this.meaningDropdown);
 		assertDefined(this.infoDisplay1, 'scene');
-		assertDefined(this.infoDisplay2, 'scene');
-		assertDefined(this.infoDisplay3, 'scene');
-		const status = this.scene.check();
+		// assertDefined(this.infoDisplay2, 'scene');
+		// assertDefined(this.infoDisplay3, 'scene');
+		const status = this.scene.checkStatus();
 		// mTrace("scene status checked as", SceneStatus[status], this.scene.fate === undefined ? "haven't fate," : "have fate,", narr ?? "other");
 		switch (status) {
 			case SceneStatus.NeedsExpected:
@@ -244,23 +257,23 @@ export class SceneModal extends Modal {
 		this.alterationText.setDisabled(cannotEditAlteration);
 		const showFate = this.scene.fate !== undefined;
 		if (status == SceneStatus.NeedsFate && this.scene.fate === undefined) console.warn("fate needed but missing!");
-		if (showFate) {
-			if (this.scene.fate === undefined) console.warn("want to show fate but missing!");
-			assertDefined(this.fateDataModal, 'scene');
-			if (this.fateDataModal.fateData === undefined)
-				console.warn("fate modal has no data");
-		}
-		if (this.fateDataModal !== undefined) this.fateDataModal.setVisibility(showFate, "CAS");
+		// if (showFate) {
+		// 	if (this.scene.fate === undefined) console.warn("want to show fate but missing!");
+		// 	assertDefined(this.fateDataModal, 'scene');
+		// 	if (this.fateDataModal.fateData === undefined)
+		// 		console.warn("fate modal has no data");
+		// }
+		// if (this.fateDataModal !== undefined) this.fateDataModal.setVisibility(showFate, "CAS");
 		const cannotSetMeaning = status < SceneStatus.NeedsMeaning
 			|| this.scene.sceneType == SceneType.Expected;
-		if (this.meaningSetting !== undefined)
-			this.meaningSetting.setVisibility(!cannotSetMeaning);
+		// if (this.meaningSetting !== undefined)
+		// 	this.meaningSetting.setVisibility(!cannotSetMeaning);
 		if (this.alteredSetting !== undefined)
 			this.alteredSetting.setVisibility(status > SceneStatus.NeedsAlterationKind); // TODO revisit
-		const [d1, d2, d3] = this.scene.toText(tables);
+		const d1 = this.scene.asText(tables);
 		this.infoDisplay1.setValue(d1);
-		this.infoDisplay2.setValue(d2);
-		this.infoDisplay3.setValue(d3);
-		mTrace('scene', cannotEditAlteration ? "no alter," : "", cannotSetMeaning ? "no mean," : "", showFate ? "see fate," : "not see fate,", this.scene.fate === undefined ? "haven't fate," : "have fate,", this.scene.meaning === undefined ? "haven't meaning," : "have meaning: " + this.scene.meaning.meaningKind, ", type:", this.scene.sceneType, ", kind:", this.scene.kind, SceneStatus[status]);
+		// this.infoDisplay2.setValue(d2);
+		// this.infoDisplay3.setValue(d3);
+		mTrace('scene', cannotEditAlteration ? "no alter," : "", cannotSetMeaning ? "no mean," : "", showFate ? "see fate," : "not see fate,", this.scene.fate === undefined ? "haven't fate," : "have fate,", this.scene.fate?.meaning === undefined ? "haven't meaning," : "have meaning: " + this.scene.fate?.meaning.action, ", type:", this.scene.sceneType, ", kind:", this.scene.kind, SceneStatus[status]);
 	}
 }

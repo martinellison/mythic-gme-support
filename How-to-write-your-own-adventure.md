@@ -6,7 +6,7 @@ This assumes that you have a copy of Tana Pigeon's *Mythic Game Master Emulator*
 ## Setup
 - install the Obsidian note-taking application. See https://obsidian.md/
 - create a new vault for this plugin, so you do not corrupt your other notes when the plugin malfunctions. For vaults, and other Obsidian features, see the Obsidian documentation.
-- The plugin *should* be installable using the normal Obsidian 'community' process.
+- The plugin is installable using the normal Obsidian 'community' process.
 - ~~The plugin releases are stored on GitHub at https://github.com/martinellison/mythic-gme-support/releases. You want the latest release.~~
 - ~~Pull down a copy of the latest plugin release from GitHub and move it into the `.obsidian/plugins/mystic-support` directory in your vault (create this if it does not exist). You do not need to copy the source code ZIP files.~~
 - ~~copy the `tables.kdl` file into a `tables.md` file in your vault. (This step will be automated in a later release).~~
@@ -18,7 +18,8 @@ This assumes that you have a copy of Tana Pigeon's *Mythic Game Master Emulator*
 - go to the plugin properties and set the Adventure Folder property to the path to the folder for your story (to the same folder that you have just created).
 - create an adventure
     - Get into edit mode and make sure that the cursor is on a blank line.
-    - Bring up the *Mythic GME: Create a Mythic Object* command (you may want to define a hotkey for this); this will display a dialog for creating 'blocks' for this plugin..
+    - Bring up the *Mythic GME: Create a Mythic Object* command (you may want to define a hotkey for this); this will display a dialog for creating 'blocks' for this plugin.
+      - the first time you do this, it may bring up a modal dialog to set the adventure folder; if it does this, normally you can just accept the default. 
     - select adventure in the drop-down and click create. This will display a new modal dialog for creating your new adventure.
     - enter a short description into the big box and click create.
     - edit your Obsidian note:

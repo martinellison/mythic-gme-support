@@ -1,5 +1,5 @@
-import { App, debounce, Modal, PluginSettingTab, Setting } from 'obsidian';
-import type { SettingDefinitionItem__, TFile } from 'obsidian';
+import { App, debounce, Modal, PluginSettingTab, Setting, TFile } from 'obsidian';
+// import type { SettingDefinitionItem__, TFile } from 'obsidian';
 import { mTrace } from './utils.js';
 import MythicSupportPlugin from './main.js';
 
@@ -45,8 +45,8 @@ export class MythicSettingTab extends PluginSettingTab {
 		plugin.registerEvent(this.app.vault.on('rename', refresh));
 	}
 	/// should not be called but required by compiler
-	display() { } // TODO obsidian wants to get rid of this
-	getSettingDefinitions(): SettingDefinitionItem__[] { // TODO obsidian does not like SettingDefinitionItem__
+	display(): void { } // TODO obsidian wants to get rid of this but PluginSettingTab requires it
+	getSettingDefinitions() {
 		return [
 			{ name: "Auto scan lists", desc: "automatically recreate lists", control: { type: 'toggle', defaultValue: true, key: 'autoScanLists' } },
 			{ name: "Adventure folder", desc: "folder containing the current adventure", control: { type: 'folder', defaultValue: this.app.vault.getRoot().path, key: 'adventureFolder' } },

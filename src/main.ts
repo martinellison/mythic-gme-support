@@ -21,10 +21,11 @@ import { Question, QuestionModal } from './question.js';
 import { MythicObjectMeta, Oracle, Tables } from './tables/tables.js';
 import { Metadata } from './metadata.js';
 import { Dice, DiceModal } from './dice.js';
-import { Meaning, MeaningModal } from './meaning.js';
+import { Meaning } from './meaning/meaning.js';
 import { SceneTypeSupport } from './scene/sceneType.js';
 import { KdlTables } from './tables/kdl.js';
 import { assertDefined, mTrace } from './utils.js';
+import { MeaningModal } from './meaning/meaningModal.js';
 /** the plugin */
 export default class MythicSupportPlugin extends Plugin {
 	settings!: MythicSupportPluginSettings;
@@ -79,19 +80,7 @@ export default class MythicSupportPlugin extends Plugin {
 							null
 						);
 					}
-					if (this.fixFolderPath(view)) return true;
-					// if (view instanceof MarkdownView) {
-					// 	const file = view.getFile();
-					// 	if (file && !SettingsHelper.fileInAdventure(this.settings, file)) {
-					// 		const lastSlash = file.path.lastIndexOf('/');
-					// 		const suggest = file.path.substring(0, lastSlash);
-					// 		new AdventureFolderModal(app, suggest, (newPath) => {
-					// 			this.settings.adventureFolder = newPath;
-					// 			void this.saveData(this.settings);
-					// 		}).open();
-					// 		return true;
-					// 	}
-					// }
+					if (this.fixFolderPath(this.app, view)) return true;
 					const startBlock = CodeBlock.getEmptyBlock(editor);
 					mTrace('main', "creating block at", JSON.stringify(startBlock));
 					if (startBlock.isInBlock) {
@@ -192,7 +181,7 @@ export default class MythicSupportPlugin extends Plugin {
 						);
 					}
 					try {
-						if (this.fixFolderPath(view)) return true;
+						if (this.fixFolderPath(this.app, view)) return true;
 						let block = CodeBlock.getBlock(editor);
 						if (block.isInBlock) {
 							const source = block.contents(editor);
@@ -327,7 +316,7 @@ export default class MythicSupportPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
-	fixFolderPath(view: MarkdownView | MarkdownFileInfo): boolean {
+	fixFolderPath(appp: App, view: MarkdownView | MarkdownFileInfo): boolean {
 		if (view instanceof MarkdownView) {
 			const file = view.getFile();
 			if (file && !SettingsHelper.fileInAdventure(this.settings, file)) {

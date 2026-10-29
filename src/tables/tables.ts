@@ -2,6 +2,7 @@
 import { Type, plainToInstance, Expose } from 'class-transformer';
 import { QuestionOdds } from '../question.js';
 import { CheckTable } from './checkTable.js';
+import { mTrace } from '../utils.js';
 /** which kind of object */
 export enum ThingFamily { ThingObject, OracleResponse, SimpleText };
 /** describes some objects, including how to randomise them. Loaded in from the KDL tables. */
@@ -88,12 +89,22 @@ export class Tables {
 		}
 		return simpleMeta;
 	}
-
 	getQuestionOdds(ident: string): QuestionOdds {
 		// mTrace('', "finding odds", ident);
 		for (let questOdds of this.questionOdds) {
 			if (questOdds.ident == ident) return questOdds;
 		}
 		return this.questionOdds[0] ?? new QuestionOdds(ident, ident, 0);
+	}
+	/** return a list of available oracles that can be used in a dropdown */
+	oracleNames(): Array<[string, string]> {
+		let oracles = new Array<[string, string]>;
+		let tabKind, tab;
+		for ([tabKind, tab] of this.oracles) {
+			mTrace('meaning', "drop", tab.meta.noAlt ? ", no alt" : "", tab.meta.displayName);
+			if (!tab.meta.noAlt)
+				oracles.push([tabKind, tab.meta.displayName]);
+		}
+		return oracles;
 	}
 }

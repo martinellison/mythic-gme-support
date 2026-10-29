@@ -1,50 +1,72 @@
 import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
 import { Modal, App, Setting, MarkdownPostProcessorContext } from 'obsidian';
-import { CodeBlock } from './codeblock.js';
-import { assertDefined, mTrace, mythicDice, shorten } from './utils.js';
-import { Oracle, Tables } from './tables/tables.js';
+import { CodeBlock } from '../codeblock.js';
+import { assertDefined, mTrace, mythicDice, shorten } from '../utils.js';
+import { Oracle, Tables } from '../tables/tables.js';
 
 /**  implements an meaning block. This covers the results of an oracle. MGME book pp46ff, 84ff. Meaning text should come after a meaning block */
 export class Meaning {
 	@Expose() description: string = "";
-	@Expose() meaningKind: string = 'action1';
+	@Expose() action: string = 'action1';
 	@Expose() randoms: Array<number> = [0, 0];
 	@Expose() result1: string = "";
 	@Expose() result2: string = "";
 	static readonly TAG = 'mythic-meaning';
 	constructor(meaningKind: string = 'action1') {
-		this.meaningKind = meaningKind;
+		this.action = meaningKind;
 	}
-	// typ(): string { return 'meaning'; }
 	/** convert from a JSON string to a Meaning. */
 	static fromJson(source: string): Meaning {
 		try {
 			// @ts-ignore
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- JSON.parse returns any
 			let meaning: Meaning = plainToInstance(Meaning, JSON.parse(source), { excludeExtraneousValues: true });
-			if (meaning.meaningKind == '') meaning.meaningKind = 'action1';
+			// if (meaning.meaningKind == '') meaning.meaningKind = 'action1';
+			meaning.afterLoad();
 			return meaning;
 		} catch (error) {
 			console.error("error parsing meaning: ", error, "reading:", shorten(source));
 			throw error;
 		}
 	}
+	/** do this after a Meaning has been deserialised */
+	afterLoad() {
+		if (this.action == '') this.action = 'action1';
+	}
 	/** convert  a Meaning to a JSON string */
 	toJson(): string {
+		this.beforeUnload();
 		return JSON.stringify(instanceToPlain(this));
 	}
+	/** do this before a Meaning is serialised */
+	beforeUnload() {
+	}
+
+	/** describe the meaning in plain text */
+	asText(tables: Tables): string {
+		return `${this.result1}/${this.result2}`;
+	}
 	/** create HTML for display */
+	asHtml(elt: HTMLElement) {
+		elt.createSpan({ text: `(meaning) ` });
+		let descElt = elt.createEl('i');
+		descElt.createEl('b', { text: `${this.description}:` });
+		elt.createSpan({ text: ` ${this.result1}` });
+		elt.createEl('b', { text: ` ${this.result2}` });
+	}
+	/** create HTML for display from block */
 	static toHtml(source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) {
 		// assertDefined(tables);
 		let divElt: HTMLDivElement = el.createDiv({ cls: 'mythic-meaning' });
 		try {
 			mTrace('meaning', "rendering meaning", source);
 			const meaning: Meaning = Meaning.fromJson(source);
-			divElt.createSpan({ text: `(meaning) ` });
-			let descElt = divElt.createEl('i');
-			descElt.createEl('b', { text: `${meaning.description}:` });
-			divElt.createSpan({ text: ` ${meaning.result1}` });
-			divElt.createEl('b', { text: ` ${meaning.result2}` });
+			meaning.asHtml(divElt);
+			// divElt.createSpan({ text: `(meaning) ` });
+			// let descElt = divElt.createEl('i');
+			// descElt.createEl('b', { text: `${meaning.description}:` });
+			// divElt.createSpan({ text: ` ${meaning.result1}` });
+			// divElt.createEl('b', { text: ` ${meaning.result2}` });
 		} catch (error) {
 			const msg = `error when parsing meaning: ${error as Error}`;
 			console.error(msg);
@@ -64,17 +86,17 @@ export class Meaning {
 	};
 	/** sets `this.result to a textual description of the randomly chosen meaning. */
 	explain(tables: Tables) {
-		const tab = tables.oracles.get(this.meaningKind);
+		const tab = tables.oracles.get(this.action);
 		if (tab === undefined) {
-			this.result1 = `unknown ${this.meaningKind}`;
+			this.result1 = `unknown ${this.action}`;
 			this.result2 = "";
-			console.warn("cannot explain", this.meaningKind);
+			console.warn("cannot explain", this.action);
 			return;
 		}
-		const meanings = Meaning.meanings(tables, this.randoms, this.meaningKind);
+		const meanings = Meaning.meanings(tables, this.randoms, this.action);
 		this.result1 = `(${tab.meta.displayName ?? tab.meta.description})`;
 		this.result2 = `${meanings}`;
-		mTrace('meaning', `${this.meaningKind} meaning explained as ${this.result1}: ${this.result2}`);
+		mTrace('meaning', `${this.action} meaning explained as ${this.result1}: ${this.result2}`);
 	}
 	/** this selects a meaning. */
 	static meaning1(tables: Tables, meaningKind: string): string {
@@ -120,80 +142,10 @@ export class Meaning {
 		assertDefined(tables, 'meaning');
 		// if (this.meaningKind == 'none') console.warn("no meaning kind in tableSizes");
 		let ts = new Array<number>;
-		const tabs = Meaning.selectedTables(tables, this.meaningKind);
+		const tabs = Meaning.selectedTables(tables, this.action);
 		for (const t of tabs)
 			ts.push(t.length ?? 0);
 		mTrace('meaning', "table sizes are", ts.toString());
 		return ts;
 	}
 }
-/** dialog to edit a Meaning. This for a stand-alone Meaning code block. */
-export class MeaningModal extends Modal {
-	meaning: Meaning;
-	dropdownSetting?: Setting;
-	constructor(app: App, meaning: Meaning, block: CodeBlock, tables: Tables) {
-		super(app);
-		assertDefined(tables, 'meaning');
-		assertDefined(meaning, 'meaning');
-		this.meaning = meaning;
-		this.setTitle('Meaning');
-		new Setting(this.contentEl)
-			.setName('Description')
-			.addTextArea((text) => {
-				text.setValue(this.meaning.description);
-				text.onChange((value) => {
-					this.meaning.description = value;
-				});
-			});
-		this.dropdownSetting = MeaningModal.makeMeaning(this.contentEl, tables, (meaningKind: string) => {
-			if (meaning !== undefined) {
-				this.meaning.meaningKind = meaningKind;
-				this.meaning.explain(tables);
-			}
-		}, this.meaning);
-		new Setting(this.contentEl)
-			.addButton((btn) => btn
-				.setButtonText("Throw dice and save")
-				.setCta()
-				.onClick(() => {
-					this.close();
-					meaning.throwDice(meaning.tableSizes(tables));
-					meaning.explain(tables);
-					const json = meaning.toJson();
-					mTrace('meaning', "save as", json);
-					let editor = app.workspace.activeEditor?.editor;
-					if (editor !== undefined)
-						block.replaceContents(Meaning.TAG, json, editor);
-				}))
-			.addButton((btn) => btn
-				.setButtonText('Cancel')
-				.setCta()
-				.onClick(() => {
-					this.close();
-				}));
-	}
-	/** create the user interface for searching for a Meaning. This will be part of a Modal. Create a drop down to select a meaning oracle. 
-	 
-	If `meaning` is not defined, this just means that no meaning has been selected yet, and so no value will be initially selected in the dropdown. 
-	
-	Make sure that the visibility of this setting can be changed after the modal has been created.*/
-	static makeMeaning(elt: HTMLElement, tables: Tables, onChange: (meaningKind: string) => void, meaning: Meaning | undefined): Setting | undefined {
-		if (meaning === undefined) { mTrace('meaning/make', "(make meaning) no meaning for dropdown"); } // not a problem
-		let setting = new Setting(elt)
-			.setDesc("Select which meaning tables to consult.").setName('Meaning').addDropdown((dropDown) => {
-				let tabKind, tab;
-				for ([tabKind, tab] of tables.oracles) {
-					mTrace('meaning', "drop", tab.meta.noAlt ? ", no alt" : "", tab.meta.displayName);
-					if (!tab.meta.noAlt)
-						dropDown.addOption(tabKind, tab.meta.displayName);
-				}
-				dropDown.setValue(meaning === undefined ? 'action1' : meaning.meaningKind);
-				dropDown.onChange((value) => {
-					mTrace('meaning', "meaning changed to", value);
-					onChange(value);
-					// }
-				});
-			});
-		return setting;
-	}
-};

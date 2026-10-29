@@ -1,6 +1,6 @@
-import { FateData } from "../fatedata.js";
+import { FateData } from "../fateData/fatedata.js";
 import { mTrace } from "../utils.js";
-import { Meaning } from "../meaning.js";
+import { Meaning } from "../meaning/meaning.js";
 import { SceneAdjustment } from "./adjustment.js";
 import { Scene } from "./scene.js";
 
@@ -37,48 +37,49 @@ export class AlterationSupport {
                 scene.adjustment = new Array<SceneAdjustment>;
                 break;
             case AlterationKind.Meaning:
-                scene.meaning = new Meaning;
+                if (scene.fate !== undefined)
+                    scene.fate.meaning = new Meaning;
                 break;
         }
     }
     /** this scene is an alteration scene, so remove any unnecessary data. */
     static useAlterationKind(scene: Scene) {
-        mTrace("scene", "kind is", scene.kind);
+        mTrace("scene alteration", "kind is", scene.kind);
         switch (scene.kind) {
             case AlterationKind.Expected:
                 scene.alteration = undefined;
                 scene.adjustment = undefined;
                 scene.fate = undefined;
-                scene.meaning = undefined;
-                scene.focus = undefined;
+                // scene.fate.meaning = undefined;
+                // scene.fate.focus = undefined;
                 break;
             case AlterationKind.Next:
             case AlterationKind.Tweak:
                 scene.adjustment = undefined;
                 scene.fate = undefined;
-                scene.meaning = undefined;
-                scene.focus = undefined;
+                // scene.meaning = undefined;
+                // scene.focus = undefined;
                 break;
             case AlterationKind.FateQuestion:
                 scene.adjustment = undefined;
-                scene.meaning = undefined;
-                scene.focus = undefined;
+                // scene.meaning = undefined;
+                // scene.focus = undefined;
                 if (scene.fate === undefined)
                     scene.fate = new FateData(scene);
                 break;
             case AlterationKind.Adjustment:
                 scene.fate = undefined;
-                scene.meaning = undefined;
-                scene.focus = undefined;
+                // scene.meaning = undefined;
+                // scene.focus = undefined;
                 if (scene.adjustment === undefined)
                     scene.adjustment = new Array<SceneAdjustment>;
                 break;
             case AlterationKind.Meaning:
                 scene.adjustment = undefined;
                 scene.fate = undefined;
-                scene.focus = undefined;
-                if (scene.meaning === undefined)
-                    scene.meaning = new Meaning;
+                // scene.focus = undefined;
+                // if (scene.meaning === undefined)
+                // 	scene.meaning = new Meaning;
                 // scene.meaning.explain(tables);
                 break;
         }

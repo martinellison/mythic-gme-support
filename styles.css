@@ -92,12 +92,6 @@
     display: inline;
     /* font-size: 90%; */
 }
-.mythic-random:before {
-    content: '[';
-}
-.mythic-random:after {
-    content: ']';
-}
 .mythic-fate {
     color: rgb(150, 82, 150);
     display: inline;
@@ -110,9 +104,8 @@
     content: ']';
 }
 .mythic-focus {
-    color: rgb(62, 258, 62);
+    color: rgb(62, 255, 62);
     display: inline;
-    font-size: 90%;
 }
 .mythic-focus:before {
     content: '[';

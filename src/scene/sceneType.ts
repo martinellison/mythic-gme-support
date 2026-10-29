@@ -28,8 +28,8 @@ export class SceneTypeSupport {
 				scene.adjustment = undefined;
 				// this.randomEvent = undefined;
 				scene.fate = undefined;
-				scene.focus = undefined;
-				scene.meaning = undefined;
+				// scene.focus = undefined;
+				// scene.meaning = undefined;
 				break;
 			case SceneType.Altered:
 				AlterationSupport.useAlterationKind(scene);
