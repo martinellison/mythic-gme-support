@@ -1,4 +1,4 @@
-// import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
+
 import { mythicDice } from './utils.js';
 
 const DIGIT_EXPRESSION: RegExp = /^\d$/;

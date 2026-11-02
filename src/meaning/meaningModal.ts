@@ -1,8 +1,7 @@
-import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
-import { Modal, App, Setting, MarkdownPostProcessorContext } from 'obsidian';
+import { Modal, App, Setting, } from 'obsidian';
 import { CodeBlock } from '../codeblock.js';
-import { assertDefined, mTrace, mythicDice, shorten } from '../utils.js';
-import { Oracle, Tables } from '../tables/tables.js';
+import { assertDefined, mTrace } from '../utils.js';
+import { Tables } from '../tables/tables.js';
 import { MeaningPartModal } from './meaningPartModal.js';
 import { Meaning } from './meaning.js';
 
@@ -26,20 +25,12 @@ export class MeaningModal extends Modal {
 				});
 			});
 		this.partModal = new MeaningPartModal(meaning, this.contentEl, tables);
-		// this.dropdownSetting = partModal.make(this.contentEl, tables, (meaningKind: string) => {
-		// 	if (meaning !== undefined) {
-		// 		this.meaning.meaningKind = meaningKind;
-		// 		this.meaning.explain(tables);
-		// 	}
-		// }, this.meaning);
 		new Setting(this.contentEl)
 			.addButton((btn) => btn
 				.setButtonText("Save")
 				.setCta()
 				.onClick(() => {
 					this.close();
-					// meaning.throwDice(meaning.tableSizes(tables));
-					// meaning.explain(tables);
 					const json = this.meaning.toJson();
 					mTrace('meaning', "save as", json);
 					let editor = app.workspace.activeEditor?.editor;

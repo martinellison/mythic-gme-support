@@ -1,6 +1,5 @@
 import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
-import { Modal, App, Setting, MarkdownPostProcessorContext } from 'obsidian';
-import { CodeBlock } from '../codeblock.js';
+import { MarkdownPostProcessorContext } from 'obsidian';
 import { assertDefined, mTrace, mythicDice, shorten } from '../utils.js';
 import { Oracle, Tables } from '../tables/tables.js';
 
@@ -21,7 +20,6 @@ export class Meaning {
 			// @ts-ignore
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- JSON.parse returns any
 			let meaning: Meaning = plainToInstance(Meaning, JSON.parse(source), { excludeExtraneousValues: true });
-			// if (meaning.meaningKind == '') meaning.meaningKind = 'action1';
 			meaning.afterLoad();
 			return meaning;
 		} catch (error) {
@@ -39,9 +37,7 @@ export class Meaning {
 		return JSON.stringify(instanceToPlain(this));
 	}
 	/** do this before a Meaning is serialised */
-	beforeUnload() {
-	}
-
+	beforeUnload() { }
 	/** describe the meaning in plain text */
 	asText(tables: Tables): string {
 		return `${this.result1}/${this.result2}`;
@@ -62,11 +58,6 @@ export class Meaning {
 			mTrace('meaning', "rendering meaning", source);
 			const meaning: Meaning = Meaning.fromJson(source);
 			meaning.asHtml(divElt);
-			// divElt.createSpan({ text: `(meaning) ` });
-			// let descElt = divElt.createEl('i');
-			// descElt.createEl('b', { text: `${meaning.description}:` });
-			// divElt.createSpan({ text: ` ${meaning.result1}` });
-			// divElt.createEl('b', { text: ` ${meaning.result2}` });
 		} catch (error) {
 			const msg = `error when parsing meaning: ${error as Error}`;
 			console.error(msg);
@@ -116,7 +107,6 @@ export class Meaning {
 			console.error("in meaning2, ", err, "for", meaningKind);
 			if (tab !== undefined)
 				console.warn("found ", tab);
-			// for (const k of tables.oracles.keys()) mTrace('meaning oracles', k);
 			return err;
 		}
 	}
@@ -140,7 +130,6 @@ export class Meaning {
 	/** this returns the sizes of the selected tables. */
 	tableSizes(tables: Tables): Array<number> {
 		assertDefined(tables, 'meaning');
-		// if (this.meaningKind == 'none') console.warn("no meaning kind in tableSizes");
 		let ts = new Array<number>;
 		const tabs = Meaning.selectedTables(tables, this.action);
 		for (const t of tabs)

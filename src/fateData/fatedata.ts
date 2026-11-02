@@ -1,5 +1,4 @@
-// import { Setting, TextAreaComponent, ButtonComponent, DisplayValueComponent, DropdownComponent, } from 'obsidian';
-// import { Tables } from '../tables/tables.js';
+
 import { assertDefined, mTrace, mythicDice, } from '../utils.js';
 import { Exclude, Expose, Type, } from 'class-transformer';
 import { EventFocus } from '../eventFocus/eventfocus.js';
@@ -70,11 +69,6 @@ export class FateData {
 		if (isRandom) {
 			if (this.focus == undefined) {
 				this.focus = new EventFocus();
-
-				// this.focus.throwDice(tables);
-				// let ent = this.focus.focusDescr(tables);
-				// this.focus.defineSelectedObject(metadata, ent.interpretation, this.includeProtected ?? false);
-				// this.focus.makeRandom(tables, metadata, this.includeProtected ?? false);
 			}
 		} else {
 			this.focus = undefined;
@@ -91,17 +85,7 @@ export class FateData {
 	asText(tables: Tables): string {
 		let texts = new Array<string>;
 		try {
-			// if (this.hasRandom) {
-			// texts.push("Random event: ");
-			// if (this.focus !== undefined) {
-			// 	texts.push(this.focus.asText(tables));
-			// }
-			// }
 			if (this.includeProtected) texts.push(", include protected");
-			// let mod: number = tables.getQuestionOdds(this.odds).fate_check_modifier;
-			// let rollTotal = (this.dice[0] ?? 0) + (this.dice[1] ?? 0) + mod + this.chaosMod(); // always d10
-			// mTrace('fatedata', `roll totla is ${rollTotal}`);
-			// let answer = tables.fateCheckAnswers.resolve(rollTotal,);
 			const [answer, rollTotal, _mod] = this.interpret(tables);
 			texts.push(`${this.description}: ${answer.text} (${this.dice[0]}/${this.dice[1]} = ${rollTotal})`);
 		} catch (error) {
@@ -126,25 +110,14 @@ export class FateData {
 			descElt.createEl('b', { text: ` ${this.description}` });
 			spanFate.createSpan({ text: ` ${this.dice[0]}/${this.dice[1]}` });
 			spanFate.createSpan({ text: ` odds: ${this.odds}` });
-			// const mod: number = tables.getQuestionOdds(this.odds).fate_check_modifier;
-			// const chaos = this.chaosMod();
-			// const rollTotal = (this.dice[0] ?? 0) + (this.dice[1] ?? 0) + mod + chaos; // always d10
-			// mTrace('fatedata', `roll totla is ${rollTotal}`);
-			// const answer = tables.fateCheckAnswers.resolve(rollTotal);
 			const [answer, rollTotal, mod] = this.interpret(tables);
 			spanFate.createEl('i', { text: ` (${this.dice[0] ?? 0} + ${this.dice[1] ?? 0} + ${mod} + ${this.chaosMod()})` });
 			spanFate.createSpan({ text: ` = ${rollTotal}` });
 			spanFate.createEl('b', { text: ` (${answer.text})` });
-			// mTrace('fate', this.dice, mod, chaos, "=", roll_total);if (question.hasRandom) {
-			// divElt.createSpan({ text: "Random event: ", cls: 'mythic-random' });
 			if (this.includeProtected) divElt.createSpan({ text: " include protected" });
 			if (this.meaning !== undefined) {
 				this.meaning.asHtml(divElt);
-				// divElt.createDiv({ text: this.meaning.result1, cls: 'mythic-random' });
-				// divElt.createEl('b', { text: this.meaning.result2, cls: 'mythic-random' });
 			}
-			// if (this.hasRandom) {
-			// divElt.createSpan({ text: "Random event ", cls: 'mythic-random' });
 			if (this.focus !== undefined) {
 				this.focus.asHtml(divElt, tables);
 			}

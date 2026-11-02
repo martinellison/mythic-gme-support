@@ -46,7 +46,6 @@ export class Adventure {
 				tables.objectKinds.forEach((kind: MythicObjectMeta, ident: string) => {
 					let kindElt = divElt.createDiv();
 					kindElt.createEl('b', { text: `${kind.displayName}: ` });
-					// const objects = metadata.blockTable.objects(ident).map(ch => (ch.marker !== undefined && ch.marker.trim() != "" ? ` [${ch.marker}] ` : "") + ch.name);
 					const objects = metadata.blockTable.objectNames(ident, true);
 					mTrace('adventure', "for adventure", ident, JSON.stringify(kind), JSON.stringify(objects));
 					kindElt.createSpan({ text: ` ${objects.join(", ")}` });

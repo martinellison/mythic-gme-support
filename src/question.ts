@@ -95,8 +95,6 @@ export class QuestionModal extends Modal {
 		this.question = question;
 		this.setTitle('Question');
 		let fateDataModal = new FateDataModal(this.contentEl, tables, metadata, (isRandom) => {
-			// this.question.makeRandomEvent(isRandom, tables, metadata);
-			// this.setRandom(isRandom, tables);
 			/* TODO iff is random, create a random event i.e. focus and question */
 		});
 		fateDataModal.setVisibility(true, "Q");
@@ -120,23 +118,5 @@ export class QuestionModal extends Modal {
 					if (editor !== undefined)
 						block.replaceContents(Question.TAG, json, editor);
 				}));
-		// this.setRandom(this.hasRandom, tables);
 	}
-	// /** returns the text for a save button. */
-	// static buttonText(kind: QuestionButtonKind): string {
-	// 	switch (kind) {
-	// 		case QuestionButtonKind.Save:
-	// 			return "Save";
-	// 		case QuestionButtonKind.ThrowDice:
-	// 			return "Throw dice and save";
-	// 		default:
-	// 			return "?";
-	// 	}
-	// }
-	// checkAndShow() {
-	// 	// const status = this.question.checkStatus();
-	// }
-}
-// const enum QuestionButtonKind {
-// 	ThrowDice, Save,
-// }
+} 

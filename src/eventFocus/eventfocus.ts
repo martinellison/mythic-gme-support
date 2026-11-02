@@ -49,18 +49,15 @@ export class EventFocus {
 	asText(tables: Tables): string {
 		mTrace('eventfocus', "random event: explaining ");
 		let parts = new Array<string>;
-		// parts.push("[random event focus!]"); // TODO trace, remove later
 		const focusDescr = this.focusDescr(tables);
 		const meta = tables.objectKinds.get(focusDescr.interpretation);
 		if (meta !== undefined) {
 			parts.push(meta.displayName);
 		}
-		// parts.push(`[${focusDescr.text}]`);
 		switch (focusDescr.interpretation) {
 			case Interpretation.None.toString(): break;
 			case Interpretation.NewNPC.toString(): parts.push("Create a new NPC"); break;
 			default:
-				// parts.push(`[interp as ${focusDescr.interpretation.toString()}]`); 
 				break;
 		}
 		parts.push(focusDescr.text);
@@ -73,7 +70,6 @@ export class EventFocus {
 		let spanFocus: HTMLSpanElement = divElt.createSpan({ text: " (focus) ", cls: 'mythic-focus' });
 		try {
 			mTrace('eventfocus', "random event: explaining to HTML ");
-			// spanFocus.createSpan({ text: "(random event focus)" }); // TODO trace, remove later
 			const focusDescr = this.focusDescr(tables);
 			const meta = tables.objectKinds.get(focusDescr.interpretation);
 			if (meta !== undefined) {
@@ -83,9 +79,8 @@ export class EventFocus {
 			switch (focusDescr.interpretation) {
 				case Interpretation.None.toString(): break;
 				case Interpretation.NewNPC.toString(): spanFocus.createSpan({ text: " Create a new NPC" }); break;
-				default: break; // spanFocus.createSpan({ text: `[interp as ${focusDescr.interpretation.toString()}]` });
+				default: break;
 			}
-			// spanFocus.createSpan({ text: ` ${focusDescr.text}` });
 			if (this.object != "")
 				spanFocus.createEl('b', { text: ` (${this.object})` });
 		} catch (error) {

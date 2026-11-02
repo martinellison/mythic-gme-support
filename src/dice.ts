@@ -23,7 +23,6 @@ export class Dice {
 			return dice;
 		} catch (error) {
 			console.error("error parsing dice: ", error, "reading:", shorten(source));
-			// return new MythicObject("", "", "", "", false);
 			throw error;
 		}
 	}

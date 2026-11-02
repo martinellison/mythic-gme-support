@@ -46,7 +46,6 @@ export class CodeBlock {
 		let cursor = editor.getCursor();
 		let lineNumber = cursor.line; // zero based
 		mTrace('code block', `line count ${lineCount}, looking forwards from ${lineNumber}`);
-		// let charPos = cursor.ch;
 		let line = '';
 		let lastLine = lineNumber;
 		for (; ;) {

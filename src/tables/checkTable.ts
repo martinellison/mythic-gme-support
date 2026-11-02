@@ -31,7 +31,6 @@ export class CheckTable {
 	diceMax: number = 0;
 	texts(): Array<string> { return this.entries.map((entry) => entry.text); }
 	fix(entries: Array<CheckTableEntry> = [], diceType?: string) {
-		// mTrace('', "fixing", diceType, entries);
 		this.diceType = diceType;
 		this.totWeights = 0;
 		entries.forEach((entry) => {

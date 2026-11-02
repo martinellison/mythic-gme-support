@@ -1,5 +1,4 @@
 import { App, debounce, Modal, PluginSettingTab, Setting, TFile } from 'obsidian';
-// import type { SettingDefinitionItem__, TFile } from 'obsidian';
 import { mTrace } from './utils.js';
 import MythicSupportPlugin from './main.js';
 

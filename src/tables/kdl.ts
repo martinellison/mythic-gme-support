@@ -84,7 +84,6 @@ export class KdlTables {
 		}
 		const source = await vault.cachedRead(path);
 		const kdl = parse(source);
-		// mTrace('kdl', "KDL parse result", kdl);
 		if (kdl.errors.length) {
 			for (const e of kdl.errors) {
 				console.warn("kdl error: ", e, "line", e.token.startLine, "in error", e.token.image);
@@ -136,11 +135,7 @@ export class KdlTables {
 			const text = odds.values[0]?.toString() ?? "";
 			const props = new Map(Object.entries(odds.properties));
 			assertDefined(props, 'tables');
-			// const interpretation = props.interpretation as string;
-			// const min = parseInt(props.min as string) ?? 0;
 			const weight = parseInt(props.get('weight') as string ?? "1") ?? 1;
-			// const protect = props.get('protect') as boolean ?? false;
-			// mTrace('', "fate", text, weight);
 			entries.push(new CheckTableEntry(weight, text, Interpretation.None,));
 		});
 		table.fateCheckAnswers.fix(entries, diceType);
@@ -151,14 +146,10 @@ export class KdlTables {
 		const diceType = props.get('dice') as string;
 		let entries = new Array<CheckTableEntry>;
 		node.children.forEach(chance => {
-			// mTrace('', "chance", chance);
 			const text = (chance.values[0] ?? "").toString();
 			const props = new Map(Object.entries(chance.properties));
 			assertDefined(props, 'tables');
-			// const text = props.text as string;
 			const interpretation = props.get('interpretation') as Interpretation;
-			// const protect = props.get('protect') as boolean ?? false;
-			// const min = parseInt(props.min as string) ?? 0;
 			entries.push(new CheckTableEntry(parseInt(props.get('weight') as string ?? "1") ?? 1, text, interpretation,));
 		});
 		table.eventFocus.fix(entries, diceType);
@@ -166,7 +157,6 @@ export class KdlTables {
 	/** gets all the   objects from the KDL */
 	static getObjects(node: KdlNode, table: Tables) {
 		node.children.forEach(kind => {
-			// mTrace('', "object kind", kind);
 			const ident = (kind.values[0] ?? "").toString();
 			const props = new Map(Object.entries(kind.properties));
 			assertDefined(props, 'tables');
@@ -174,7 +164,6 @@ export class KdlTables {
 			const display = props.get('display') as string;
 			const description = props.get('description') as string;
 			const progress = props.get('progress') as boolean;
-			// mTrace('', "object kind has", kind, description, display);
 			table.objectKinds.set(ident, new MythicObjectMeta(ThingFamily.ThingObject, kind.name, description, display, "", false, progress));
 		});
 	}
@@ -202,7 +191,6 @@ export class KdlTables {
 			let noAlt = props.get('noAlt') as boolean;
 			let display = props.get('display') as string ?? ident;
 			let entries = new Array<CheckTableEntry>;
-			// let items = new Array<string>;
 			tableNode.children.forEach(itemNode => {
 				const itemIdent = (itemNode.values[0] ?? "").toString();
 				const itemProps = new Map(Object.entries(tableNode.properties));
@@ -210,7 +198,6 @@ export class KdlTables {
 				const interpretation = itemProps.get('interpretation') as Interpretation ?? Interpretation.None;
 				const protect: boolean = itemProps.get('protect') as boolean ?? false;
 				let entry = new CheckTableEntry(itemWeight, itemIdent, interpretation, protect,);
-				// mTrace('table oracle', "entry", entry);
 				entries.push(entry);
 			});
 			const progress = false;

@@ -88,8 +88,6 @@ export default class MythicSupportPlugin extends Plugin {
 					}
 
 					new CreateModal(this.app, this.tables, (kind: MythicObjectKind, objectKind: string, selection: boolean) => {
-						// let cursor: EditorPosition = editor.getCursor();
-						// let startLine = startBlock.isInBlock ? startBlock.end + 1 : cursor.line;
 						const startLine = startBlock.end;
 						mTrace('main create', `start line ${startLine}`);
 						switch (kind) {
@@ -322,7 +320,7 @@ export default class MythicSupportPlugin extends Plugin {
 			if (file && !SettingsHelper.fileInAdventure(this.settings, file)) {
 				const lastSlash = file.path.lastIndexOf('/');
 				const suggest = file.path.substring(0, lastSlash);
-				new AdventureFolderModal(app, suggest, (newPath) => {
+				new AdventureFolderModal(this.app, suggest, (newPath) => {
 					this.settings.adventureFolder = newPath;
 					void this.saveData(this.settings);
 				}).open();
@@ -351,10 +349,10 @@ export class CreateModal extends Modal {
 		let selection = false;
 		super(app);
 		this.setTitle('Create object');
-		new Setting(this.contentEl).setName('Kind').addDropdown((dropDown) => {
-			dropDown.addOptions({ scene: 'Scene', question: 'Question', meaning: 'Meaning', adventure: 'Adventure', dice: 'Dice', });
+		new Setting(this.contentEl).setName('Kind to create').addDropdown((dropDown) => {
+			dropDown.addOptions({ scene: 'Scene', question: 'Question', meaning: 'Meaning/oracle', adventure: 'Adventure', dice: 'Dice throw', });
 			tables.objectKinds.forEach((kind: MythicObjectMeta, ident: string) => {
-				dropDown.addOption(ident, kind.displayName);
+				dropDown.addOption(ident, `New ${kind.displayName}`);
 			});
 			tables.objectKinds.forEach((kind: MythicObjectMeta, ident: string) => {
 				dropDown.addOption('*' + ident, `Select ${kind.displayName}`);
@@ -362,10 +360,10 @@ export class CreateModal extends Modal {
 			tables.simples.forEach((kind: MythicObjectMeta, ident: string) => {
 				dropDown.addOption(ident, kind.displayName);
 			});
-			tables.oracles.forEach((oracle: Oracle, ident: string) => {
-				if (!oracle.meta.noAlt)
-					dropDown.addOption(ident, `${oracle.meta.displayName} oracle`);
-			});
+			// tables.oracles.forEach((oracle: Oracle, ident: string) => {
+			// 	if (!oracle.meta.noAlt)
+			// 		dropDown.addOption(ident, `${oracle.meta.displayName} oracle`);
+			// });
 			dropDown.onChange((value) => {
 				switch (value) {
 					case 'scene': kind = MythicObjectKind.Scene; break;
@@ -397,7 +395,6 @@ export class CreateModal extends Modal {
 		).addButton((btn) =>
 			btn
 				.setButtonText('Cancel')
-				.setCta()
 				.onClick(() => {
 					this.close();
 				}),

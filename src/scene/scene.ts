@@ -28,15 +28,11 @@ export class Scene implements ChaosProvider {
 	@Expose() kind: AlterationKind = AlterationKind.Expected;
 	@Expose() expected: string = '';
 	@Expose() alteration?: string;
+	@Expose() where?: string;
+	@Expose() when?: string;
 	@Expose() adjustment?: Array<SceneAdjustment>;
 	@Type(() => FateData)
 	@Expose() fate?: FateData;
-	// @Type(() => EventFocus)
-	// @Expose() focus?: EventFocus;
-	// @Type(() => Meaning)
-	// @Expose() meaning?: Meaning;
-	// @Expose() hasRandom?: boolean; // does this do anything??
-	// @Expose() includeProtected?: boolean;
 	constructor(num?: string) {
 		this.ident = num ?? "0";
 	}
@@ -99,12 +95,7 @@ export class Scene implements ChaosProvider {
 			// mTrace('scene', "fate on", this.fate);
 		}
 		if (this.fate?.focus !== undefined) {
-			// mTrace('scene', "creating focus");
 			this.fate?.focus.makeRandom(tables, plugin.metadata);
-			// this.focus.throwDice(tables);
-			// let ent = this.focus.focusDescr(tables);
-			// // mTrace('scene', "focus on", ent.text);
-			// this.focus.defineSelectedObject(plugin.metadata, ent.interpretation, this.includeProtected ?? false);
 		}
 		if (this.fate?.meaning !== undefined) { // TODO the permitted kinds of adjustment are different for interrupts
 			const tabSiz = this.fate?.meaning.tableSizes(tables);
@@ -154,11 +145,9 @@ export class Scene implements ChaosProvider {
 			// @ts-ignore
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- JSON.parse returns any
 			let scene: Scene = plainToInstance(Scene, JSON.parse(source), { excludeExtraneousValues: true });
-			scene.fate?.afterLoad();
-			// if (scene.hasRandom === undefined) scene.hasRandom = false;
-			// mTrace('scene', "scene from json", scene, scene.fate === undefined ? "haven't fate" : "have fate");
 			if (scene.fate !== undefined)
 				scene.fate.chaosProvider = scene;
+			scene.afterLoad();
 			SceneTypeSupport.useSceneType(scene);
 			// if (scene.includeProtected == undefined) scene.includeProtected = false;
 			return scene;
@@ -166,23 +155,32 @@ export class Scene implements ChaosProvider {
 			console.error("error parsing scene: ", error, "reading:", shorten(source));
 			throw error;
 		}
+	}/** do this after a scene has been deserialised */
+	afterLoad() {
+		if (this.fate !== undefined)
+			this.fate?.afterLoad();
+		if (this.where === undefined) this.where = "";
+		if (this.when === undefined) this.when = "";
 	}
 	/** convert to JSON. */
 	toJson(): string {
 		SceneTypeSupport.useSceneType(this);
 		// if (!this.hasRandom) this.hasRandom = undefined;
 		// if (this.includeProtected == false) this.includeProtected = undefined;
-		this.fate?.beforeUnload();
+		this.beforeUnload();
 		return JSON.stringify(instanceToPlain(this));
+	}
+	/** do this before a scene is serialised */
+	beforeUnload() {
+		this.fate?.beforeUnload();
 	}
 	/** describe the scene in plain text */
 	asText(tables: Tables): string {
-		// let desc1 = "";
 		let descrs = new Array<string>;
-		// let desc3 = ""; //  TODO remove unless used
+		// if (this.when) descrs.push(` Time: ${this.when}`);
+		// if (this.where) descrs.push(` Place: ${this.where}`);
 		switch (this.sceneType) {
 			case SceneType.Initial:
-				// desc1 = "(not complete)";
 				break;
 			case SceneType.Expected:
 				descrs.push("The scene is as expected.");
@@ -207,36 +205,18 @@ export class Scene implements ChaosProvider {
 				// 	descrs.push("Meaning: ");
 				break;
 		}
-		// if (this.fate !== undefined) {
-		// 	descrs.push(`${this.fate.toText(tables)}`);
-		// }	
-		// if (this.fate !== undefined)
-		// 	descrs.push(this.fate?.asText(tables));
-		// if (this.hasRandom) {
-		// 	descrs.push("Random event ");
-		// }
-		// if (this.includeProtected) descrs.push(", include protected");
-		// if (this.focus !== undefined) {
-		// 	descrs.push(`${this.focus.toText(tables)}`);
-		// }
-		// if (this.meaning !== undefined) {
-		// 	if (this.meaning.result1.trim() == "")
-		// 		console.warn("unexplained meaning", this.meaning, ` (type ${this.sceneType}, kind ${this.kind})`); /* TODO FIX has occurred random [0,0] description '' in 0.1.9 2026-10-04 + 10-18 meaning not displayed? not created? */
-		// 	else desc3 = `${this.meaning.result1}: ${this.meaning.result2}`;
-		// }
-		// mTrace('scene', desc1, descrs.join(' '));
 		return descrs.join(' ');
-		// return [desc1, descrs.map((s) => shorten(s)).join(' ')];
 	}
 	/** create HTML for display */
 	static toHtml(source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext, tables: Tables) {
 		let divElt: HTMLDivElement = el.createDiv({ cls: 'mythic-scene' });
 		try {
 			assertDefined(tables, 'scene');
-			// mTrace('', "rendering scene", source);
 			const scene: Scene = Scene.fromJson(source);
 			scene.fate?.afterLoad();
 			divElt.createSpan({ text: `(scene) ${scene.ident} chaos ${scene.chaos} ` });
+			if (scene.when) divElt.createSpan({ text: ` Time: ${scene.when}` });
+			if (scene.where) divElt.createSpan({ text: ` Place: ${scene.where}` });
 			switch (scene.sceneType) {
 				case SceneType.Expected:
 					divElt.createSpan({ text: ` (expected) ` });
@@ -247,15 +227,6 @@ export class Scene implements ChaosProvider {
 					switch (scene.kind) {
 						case AlterationKind.Meaning:
 							divElt.createEl('i', { text: " meaning " });
-							// if (scene.meaning !== undefined) {
-							// 	scene.meaning.explain(tables);
-							// divElt.createSpan({
-							// 	text: scene.meaning.result
-							// });
-							// } else {
-							// 	console.error("invalid meaning", scene.meaning);
-							// 	divElt.createEl('b', { text: " no meaning! " });
-							// }
 							break;
 						case AlterationKind.Adjustment:
 							if (scene.adjustment !== undefined) {
@@ -295,19 +266,6 @@ export class Scene implements ChaosProvider {
 			if (scene.fate !== undefined) {
 				scene.fate.asHtml(divElt, tables);
 			}
-			// if (scene.alteration !== undefined) {
-			// 	divElt.createSpan({ text: "(alteration) " });
-			// 	divElt.createEl('b', { text: scene.alteration });
-			// }
-			// if (scene.focus !== undefined) {
-			// 	scene.focus.toHtml(divElt, tables);
-			// 	// el.createDiv({ text: ` ${scene.focus.toText(tables)} `, cls: 'mythic-random' });
-			// }
-			// if (scene.includeProtected) divElt.createSpan({ text: " include protected" });
-			// if (scene.meaning !== undefined) {
-			// 	el.createDiv({ text: ` ${scene.meaning.result1} `, cls: 'mythic-random' });
-			// 	el.createEl('b', { text: ` ${scene.meaning.result2} `, cls: 'mythic-random' });
-			// }
 		} catch (error) {
 			const msg = `error when parsing scene: ${error as Error}`;
 			console.error(msg);

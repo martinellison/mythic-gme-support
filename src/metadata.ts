@@ -21,7 +21,6 @@ export class Block {
 /** a collection of Blocks, such as all blocks in an adventure */
 export class BlockTable {
 	table: Map<string, Array<Block>>;
-	// queue: AsyncQueue<BlockOperation> = new AsyncQueue<BlockOperation>();
 	constructor() {
 		this.table = new Map<string, Array<Block>>;
 	}
@@ -31,10 +30,8 @@ export class BlockTable {
 	}
 	/** analyse a code block and add it to BlockTable */
 	analyseCodeBlock(data: string, pos: Pos, file: TFile, narr: string): void {
-		// mTrace('', "analysing code block in", file.path, "with:", shorten(data), narr);
 		let out_lines = new Array<string>;
 		const in_lines = data.split('\n');
-		// mTrace('', "code block", pos, data.substring(pos.start.offset, pos.end.offset - pos.start.offset));
 		const start_line = in_lines[pos.start.line] || "";
 		for (let i = pos.start.line + 1; i < pos.end.line; ++i) {
 			let inline = in_lines[i];
@@ -98,29 +95,23 @@ export class Metadata {
 	}
 	/** This is called whenever a note file has changed. It scans all th code blocks. */
 	onChanged(file: TFile, data: string, cache: CachedMetadata, plugin: MythicSupportPlugin, narr: string) {
-		// mTrace('metadata', "scanning file", file.path);
 		if (plugin === undefined) { console.warn(`onChanged no plugin, ${file.path}, ${narr}`); }
 		else if (plugin.settings === undefined) { console.warn("file onChanged no settings", narr); }
 		else {
 			this.autoScanLists = plugin.settings.autoScanLists;
 			this.adventure_from_settings = plugin.settings.adventureFolder;
-			// mTrace('metadata', `set scan lists ${this.autoScanLists}, adventure '${this.adventure_from_settings}'`);
 		}
 		if (this === undefined) console.error("no this for change!", narr);
 		if (cache === undefined) console.error("no metadata", narr);
 		if (cache === null) console.warn("null metadata", narr);
 		if (file.extension !== "md") {
-			// mTrace('metadata', "file not scanned because of extension", file.path);
 			return;
 		}
-		// mTrace('metadata', `checking against '${this.adventure_from_settings}'`);
 		const adventure_from_file = file.path;
 		if (!adventure_from_file.startsWith(this.adventure_from_settings)) {
 			// mTrace('metadata', `wrong adventure '${adventure_from_file}', required to be in '${this.adventure_from_settings}'`);
 			return;
 		}
-		// mTrace('', "metadata file scanning, file:", file, "adventure", adventure_from_file, narr);
-		// if (file.deleted) mTrace('', "file deleted");
 		if (cache !== undefined)
 			if (cache.sections !== undefined) {
 				this.blockTable.deleteFile(file);
@@ -160,17 +151,12 @@ export class Metadata {
 	async scanAllFiles(cache: MetadataCache, vault: Vault, plugin: MythicSupportPlugin) {
 		mTrace('', "block scanning all files");
 		assertDefined(plugin, 'metadata');
-		// else if (plugin.settings === undefined) { console.warn("scanAllFiles no settings");  }
 		assertDefined(cache, 'metadata');
 		assertDefined(vault, 'metadata');
 		this.blockTable.clearAll();
 		for (let file of vault.getMarkdownFiles()) {
 			if (file instanceof TFile) {
-				// mTrace('', "scanning file (scan all)", file);
 				const metadata = cache.getFileCache(file);
-				// mTrace('', "file read at start", file, metadata === undefined ? "undefined" : "defined");
-				// const data = await vault.cachedRead(file);
-				// mTrace('', "data length", data.length, "metadata", metadata);
 				if (metadata !== undefined && metadata !== null) {
 					const data = await vault.cachedRead(file);
 					this.onChanged(file, data, metadata, plugin, 'scanAllFiles');

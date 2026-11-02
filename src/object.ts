@@ -67,8 +67,6 @@ export class MythicObject {
 				console.warn(`(${object.kind}) tables not loaded yet`);
 				divElt.createEl('b', { text: `(${object.kind}) tables not loaded yet` });
 			}
-			// const tfs: string = (meta === undefined ? "unknown" : (ThingFamily[meta.family] ?? 'unknown')).toLowerCase();
-			// let cl = `mythic-object mythic-${object.kind} mythic-${tfs}` + ((object.removed ?? false) ? ' mythic-removed' : '');
 			const tag = object.hasSelection ? " selection" : "";
 			divElt.createSpan({ text: `(${object.kind}${tag})` });
 			if (object.marker !== undefined && object.marker != "")
