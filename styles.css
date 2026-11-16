@@ -77,6 +77,16 @@
 .mythic-dice:after {
     content: '»';
 }
+.mythic-quick-oracle {
+    color: rgb(154, 47, 181);
+    display: inline;
+}
+.mythic-quick-oracle:before {
+    content: '«';
+}
+.mythic-quick-oracle:after {
+    content: '»';
+}
 .mythic-meaning {
     color: rgb(140, 0, 243);
     display: inline;

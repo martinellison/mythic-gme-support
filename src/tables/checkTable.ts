@@ -1,5 +1,6 @@
 import { DiceRandom } from '../dice-utils.js';
 import { mTrace } from '../utils.js';
+import { plainToInstance, instanceToPlain, Expose } from 'class-transformer';
 
 /** Interpretation covers the interpretations of an EventFocus that do not have an entry in the `eventFocus` table. */
 export const enum Interpretation {
@@ -8,12 +9,12 @@ export const enum Interpretation {
 }
 /** an entry on a check table. The result of a random selection. The interpretation is what action to take as a result. */
 export class CheckTableEntry {
-	max: number = 0;
-	maxUnprot: number = 0;
-	weight: number = 0;
-	text: string = "??";
-	interpretation: string = Interpretation.None;
-	protect: boolean = false;
+	@Expose() max: number = 0;
+	// maxUnprot: number = 0;
+	@Expose() weight: number = 0;
+	@Expose() text: string = "??";
+	@Expose() interpretation: string = Interpretation.None;
+	@Expose() protect: boolean = false;
 	constructor(weight: number = 1, text: string = "", interpretation: string = Interpretation.None, protect: boolean = false,) {
 		this.max = 0;
 		this.weight = weight ?? 1;
@@ -24,20 +25,23 @@ export class CheckTableEntry {
 }
 /** a check table is a table that can be selected from randomly. */
 export class CheckTable {
-	entries: Array<CheckTableEntry> = new Array<CheckTableEntry>;
-	totWeights: number = 0;
-	diceType?: string;
-	diceMin: number = 0;
-	diceMax: number = 0;
+	@Expose() entries: Array<CheckTableEntry> = new Array<CheckTableEntry>;
+	@Expose() totWeights: number = 0;
+	@Expose() diceType?: string;
+	@Expose() diceMin: number = 0;
+	@Expose() diceMax: number = 0;
 	texts(): Array<string> { return this.entries.map((entry) => entry.text); }
-	fix(entries: Array<CheckTableEntry> = [], diceType?: string) {
+	setEntries(entries: Array<CheckTableEntry> = [], diceType?: string): void {
 		this.diceType = diceType;
+		this.entries = entries;
+	}
+	fix() {
 		this.totWeights = 0;
-		entries.forEach((entry) => {
+		this.entries.forEach((entry) => {
 			this.totWeights += entry.weight;
 		});
 		let w = 0;
-		entries.forEach((entry) => {
+		this.entries.forEach((entry) => {
 			w += entry.weight;
 			entry.max = w;
 		});
@@ -50,7 +54,6 @@ export class CheckTable {
 			this.diceMax = d.max();
 			this.diceMin = d.min();
 		}
-		this.entries = entries;
 	}
 	/** throw the dice, with values that can be fed to `resolve()` */
 	throwDiceStandardised(): number {

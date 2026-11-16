@@ -113,7 +113,7 @@ export class SceneModal extends Modal {
 			if (this.fateDataModal === undefined)
 				this.fateDataModal = new FateDataModal(this.contentEl, tables, plugin.metadata);
 			this.fateDataModal.setData(this.scene.fate, tables);
-			this.fateDataModal.setVisibility(true);
+			this.fateDataModal.setRandom(true, "S");
 		}
 		new Setting(this.contentEl)./* setDesc("S1"). */addDisplayValue(disp => {
 			this.infoDisplay1 = disp;

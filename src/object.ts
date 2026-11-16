@@ -5,6 +5,7 @@ import { MythicObjectMeta, Tables, ThingFamily } from './tables/tables.js';
 import { assertDefined, mTrace, shorten } from './utils.js';
 import { Metadata } from './metadata.js';
 import MythicSupportPlugin from './main.js';
+import { ModalStringListHelper, StringListHelper, ModalList } from './settingsList.js';
 
 /**  MythicObject implements an Object block. MGME book 44ff. Object text should come after a object block */
 export class MythicObject {
@@ -21,6 +22,7 @@ export class MythicObject {
 	@Expose() hasSelection?: boolean = false;
 	@Expose() selected?: string = "";
 	@Expose() isProtected?: boolean;
+	@Expose() attributes?: Array<string>;
 	constructor(kind: string, name: string, marker: string, description: string, selection: boolean) {
 		this.kind = kind;
 		this.name = name;
@@ -37,25 +39,35 @@ export class MythicObject {
 			// @ts-ignore
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- JSON.parse returns any
 			let object: MythicObject = plainToInstance(MythicObject, JSON.parse(source));
-			if (object.hasBeenRemoved === undefined) object.hasBeenRemoved = false;
-			if (object.needsFlashpoint === undefined) object.needsFlashpoint = false;
-			if (object.hasSelection === undefined) object.hasSelection = false;
-			if (object.isProtected === undefined) object.isProtected = false;
-			if (object.maxProgress === undefined) object.maxProgress = 0;
+			object.afterLoad();
 			return object;
 		} catch (error) {
 			console.error("error parsing object: ", error, "reading:", shorten(source));
 			throw error;
 		}
 	}
+	/** do this after a object has been deserialised */
+	afterLoad() {
+		if (this.hasBeenRemoved === undefined) this.hasBeenRemoved = false;
+		if (this.needsFlashpoint === undefined) this.needsFlashpoint = false;
+		if (this.hasSelection === undefined) this.hasSelection = false;
+		if (this.isProtected === undefined) this.isProtected = false;
+		if (this.maxProgress === undefined) this.maxProgress = 0;
+		if (this.attributes === undefined) this.attributes = new Array<string>;
+	}
 	/** convert to a JSON string */
 	toJson(): string {
+		this.beforeUnload();
+		return JSON.stringify(instanceToPlain(this));
+	}
+	/** do this before a object is serialised */
+	beforeUnload() {
 		if (!this.hasBeenRemoved) this.hasBeenRemoved = undefined;
 		if (!this.needsFlashpoint) this.needsFlashpoint = undefined;
 		if (!this.hasSelection) this.hasSelection = undefined;
 		if (this.maxProgress !== undefined && this.maxProgress == 0) this.maxProgress = undefined;
 		if (!this.isProtected) this.isProtected = undefined;
-		return JSON.stringify(instanceToPlain(this));
+		if (this.attributes?.length == 0) this.attributes = undefined;
 	}
 	/** create HTML for display */
 	static toHtml(source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext, tables: Tables): void {
@@ -93,6 +105,9 @@ export class MythicObject {
 			if (object.hasSelection) {
 				divElt.createSpan({ text: " Selected: " });
 				divElt.createEl('b', { text: ` ${object.selected ?? "?"}` });
+			}
+			if (object.attributes !== undefined && object.attributes?.length > 0) {
+				divElt.createSpan({ text: " Attributes: " + object.attributes?.join(", ") });
 			}
 		} catch (error) {
 			console.error("error displaying object: ", error, "reading:", shorten(source));
@@ -153,7 +168,14 @@ export class MythicObjectModal extends Modal {
 				toggle.setValue(this.object.isProtected ?? false)
 					.onChange((flag) => { this.object.isProtected = flag; });
 			});
-
+		// TODO add some way of editing attributes
+		if (this.object.attributes !== undefined) {
+			let stringListHelper = new StringListHelper(this.object.attributes);
+			let modalStringListHelper = new ModalStringListHelper(stringListHelper);
+			let modalList = new ModalList<string>(modalStringListHelper, "Attributes");
+			modalList.create(this.contentEl.createDiv());
+			modalList.render();
+		}
 		if (kind.family == ThingFamily.ThingObject && kind.progress) {
 			new Setting(this.contentEl).setName('Max progress')
 				.setDesc("Number of steps in a progress thread")

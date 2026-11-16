@@ -26,7 +26,7 @@ export class FateDataModal {
 	oddsComponent?: DropdownComponent;
 	throwButton?: ButtonComponent;
 	infoDisplay?: DisplayValueComponent;
-	// throwButtonSetting: Setting;
+	throwButtonSetting?: Setting;
 	// meaningSetting?: Setting;
 	meaningPartModal?: MeaningPartModal;
 	infoDisplaySetting?: Setting;
@@ -101,6 +101,7 @@ export class FateDataModal {
 					});
 			})
 			.addSetting((setting) => {
+				this.throwButtonSetting = setting;
 				setting
 					.setDesc("This resolves the random event.").addButton((btn) => {
 						this.throwButton = btn;
@@ -151,6 +152,13 @@ export class FateDataModal {
 		// 	this.focusDisplay = disp;
 		// });
 	}
+	/** set whether there is a random event */
+	setRandom(random: boolean, narr: string = "sv?") {
+		if (this.fateData)
+			this.fateData.hasRandom = random;
+		this.hasRandom = random;
+		this.setVisibility(random, narr);
+	}
 	/** update the FateDataModal to reflect the change in the FateData. */
 	setData(fateData: FateData | undefined, tables: Tables) {
 		// mTrace('fate data', "setting fate data");
@@ -173,7 +181,8 @@ export class FateDataModal {
 		// mTrace('fate data', "setting fate", visible ? "visible" : "invisible", narr);
 		// this.questionSetting.setVisibility(visible);
 		// this.oddsSetting.setVisibility(visible);
-		// this.throwButtonSetting.setVisibility(visible);
+		if (this.throwButtonSetting !== undefined)
+			this.throwButtonSetting.setVisibility(visible);
 		// if (this.infoDisplaySetting !== undefined)
 		// 	this.infoDisplaySetting.setVisibility(visible);
 		// // this.chaosSetting.setVisibility(visible);

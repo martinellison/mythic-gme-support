@@ -18,7 +18,7 @@ import { SceneModal } from './scene/sceneModal.js';
 import { Adventure, AdventureModal } from './adventure.js';
 import { MythicObject, MythicObjectModal } from './object.js';
 import { Question, QuestionModal } from './question.js';
-import { MythicObjectMeta, Oracle, Tables } from './tables/tables.js';
+import { MythicObjectMeta, Tables } from './tables/tables.js';
 import { Metadata } from './metadata.js';
 import { Dice, DiceModal } from './dice.js';
 import { Meaning } from './meaning/meaning.js';
@@ -26,6 +26,7 @@ import { SceneTypeSupport } from './scene/sceneType.js';
 import { KdlTables } from './tables/kdl.js';
 import { assertDefined, mTrace } from './utils.js';
 import { MeaningModal } from './meaning/meaningModal.js';
+import { QuickOracle, QuickOracleModal } from './quickOracle.js';
 /** the plugin */
 export default class MythicSupportPlugin extends Plugin {
 	settings!: MythicSupportPluginSettings;
@@ -136,6 +137,16 @@ export default class MythicSupportPlugin extends Plugin {
 								new DiceModal(this.app, dice, block).open();
 								break;
 							}
+							case MythicObjectKind.QuickOracle: {
+								let quickOracle = new QuickOracle('');
+								let block = new CodeBlock(
+									startLine,
+									startLine,
+									'quickOracle',
+								);
+								new QuickOracleModal(this.app, quickOracle, block).open();
+								break;
+							}
 							case MythicObjectKind.Meaning: {
 								let meaning = new Meaning('action1');
 								let block = new CodeBlock(
@@ -190,6 +201,12 @@ export default class MythicSupportPlugin extends Plugin {
 										let scene = Scene.fromJson(source);
 										SceneTypeSupport.useSceneType(scene);
 										new SceneModal(false, this.app, scene, block, this.tables, this).open();
+									}
+									break;
+								case QuickOracle.TAG:
+									{
+										let quickOracle = QuickOracle.fromJson(source);;
+										new QuickOracleModal(this.app, quickOracle, block,).open();
 									}
 									break;
 								case Question.TAG:
@@ -257,6 +274,12 @@ export default class MythicSupportPlugin extends Plugin {
 				Dice.TAG,
 				(source, el, ctx) => {
 					Dice.toHtml(source, el, ctx);
+				},
+			);
+			this.registerMarkdownCodeBlockProcessor(
+				QuickOracle.TAG,
+				(source, el, ctx) => {
+					QuickOracle.toHtml(source, el, ctx);
 				},
 			);
 			this.registerMarkdownCodeBlockProcessor(
@@ -339,6 +362,7 @@ export const enum MythicObjectKind {
 	Question = 'question',
 	MythicObject = 'object',
 	Dice = 'dice',
+	QuickOracle = 'quick oracle',
 	Meaning = 'meaning',
 	Adventure = 'adventure',
 }
@@ -350,7 +374,7 @@ export class CreateModal extends Modal {
 		super(app);
 		this.setTitle('Create object');
 		new Setting(this.contentEl).setName('Kind to create').addDropdown((dropDown) => {
-			dropDown.addOptions({ scene: 'Scene', question: 'Question', meaning: 'Meaning/oracle', adventure: 'Adventure', dice: 'Dice throw', });
+			dropDown.addOptions({ scene: 'Scene', question: 'Question', meaning: 'Meaning/oracle', quickOracle: 'Quick Oracle', adventure: 'Adventure', dice: 'Dice throw', });
 			tables.objectKinds.forEach((kind: MythicObjectMeta, ident: string) => {
 				dropDown.addOption(ident, `New ${kind.displayName}`);
 			});
@@ -369,6 +393,7 @@ export class CreateModal extends Modal {
 					case 'scene': kind = MythicObjectKind.Scene; break;
 					case 'question': kind = MythicObjectKind.Question; break;
 					case 'dice': kind = MythicObjectKind.Dice; break;
+					case 'quickOracle': kind = MythicObjectKind.QuickOracle; break;
 					case 'meaning': kind = MythicObjectKind.Meaning; break;
 					case 'adventure': kind = MythicObjectKind.Adventure; break;
 					default:

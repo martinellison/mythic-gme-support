@@ -23,7 +23,7 @@ export class SettingsHelper {
 	}
 	static fileInAdventure(settings: MythicSupportPluginSettings, file: TFile): boolean {
 		const folderLength = settings.adventureFolder.length;
-		const isIn = file.path.substring(0, folderLength) == settings.adventureFolder;
+		const isIn = folderLength > 0 && file.path.substring(0, folderLength) == settings.adventureFolder;
 		mTrace('settings', `file '${file.path}' ${isIn ? "is" : "is not"} in adventure folder '${settings.adventureFolder}' `);
 		return isIn;
 	}
@@ -43,7 +43,7 @@ export class MythicSettingTab extends PluginSettingTab {
 		plugin.registerEvent(this.app.vault.on('delete', refresh));
 		plugin.registerEvent(this.app.vault.on('rename', refresh));
 	}
-	/// should not be called but required by compiler
+	/// should not be called but is required by compiler
 	display(): void { } // TODO obsidian wants to get rid of this but PluginSettingTab requires it
 	getSettingDefinitions() {
 		return [

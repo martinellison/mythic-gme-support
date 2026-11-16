@@ -95,9 +95,9 @@ export class QuestionModal extends Modal {
 		this.question = question;
 		this.setTitle('Question');
 		let fateDataModal = new FateDataModal(this.contentEl, tables, metadata, (isRandom) => {
-			/* TODO iff is random, create a random event i.e. focus and question */
+			fateDataModal.setRandom(isRandom, "Q");
 		});
-		fateDataModal.setVisibility(true, "Q");
+		// fateDataModal.setVisibility(true, "Q");
 		fateDataModal.setData(question.fateData, tables);
 
 		new Setting(this.contentEl)

@@ -138,7 +138,8 @@ export class KdlTables {
 			const weight = parseInt(props.get('weight') as string ?? "1") ?? 1;
 			entries.push(new CheckTableEntry(weight, text, Interpretation.None,));
 		});
-		table.fateCheckAnswers.fix(entries, diceType);
+		table.fateCheckAnswers.setEntries(entries, diceType);
+		table.fateCheckAnswers.fix();
 	}
 	/** gets all the events from the KDL */
 	static getEventFocus(node: KdlNode, table: Tables) {
@@ -152,7 +153,8 @@ export class KdlTables {
 			const interpretation = props.get('interpretation') as Interpretation;
 			entries.push(new CheckTableEntry(parseInt(props.get('weight') as string ?? "1") ?? 1, text, interpretation,));
 		});
-		table.eventFocus.fix(entries, diceType);
+		table.eventFocus.setEntries(entries, diceType);
+		table.eventFocus.fix();
 	}
 	/** gets all the   objects from the KDL */
 	static getObjects(node: KdlNode, table: Tables) {

@@ -75,6 +75,15 @@ This enables you to ask a question with a text answer.
 
 You can add new oracles to the plugin by customising some tables. See the section below on editing the options.
 
+## Quick oracles
+
+This enables you to create a one-off oracle quickly. You do not need to customise any tables for this.
+
+- use the *Mythic GME: Create a Mythic Object* command and select quick oracle.
+-  A dialog box will come up for the quick oracle. Enter the question (e.g. "what will the monster do ?")
+- use the "+" buttton several times to add the different possible answers (you can set the weights to make some answers more likely).
+- click on "throw the dice", and the resulting text will display the oracle's answer.
+
 ## Notes
 
 It is also possible to add notes. These do not have any formatting; they are just plain text.

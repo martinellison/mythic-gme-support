@@ -86,8 +86,8 @@ export class FateData {
 		let texts = new Array<string>;
 		try {
 			if (this.includeProtected) texts.push(", include protected");
-			const [answer, rollTotal, _mod] = this.interpret(tables);
-			texts.push(`${this.description}: ${answer.text} (${this.dice[0]}/${this.dice[1]} = ${rollTotal})`);
+			const [answer, rollTotal, mod] = this.interpret(tables);
+			texts.push(`${this.description}: ${answer.text} (${this.dice[0]}/${this.dice[1]} = ${rollTotal} [${mod}])`);
 		} catch (error) {
 			const msg = `error in question: ${error as Error}`;
 			console.error(msg);
