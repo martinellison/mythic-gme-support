@@ -205,7 +205,8 @@ export class KdlTables {
 			const progress = false;
 			const meta = new MythicObjectMeta(ThingFamily.OracleResponse, ident, description, display, alt, noAlt, progress);
 			let checkTable = new CheckTable;
-			checkTable.fix(entries, diceType);
+			checkTable.setEntries(entries, diceType);
+			checkTable.fix();
 			table.oracles.set(ident, new Oracle(meta, checkTable, checkTable.diceMax));
 		});
 	}
